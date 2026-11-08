@@ -3,6 +3,7 @@ import {
   AlertCircle,
   ArrowDown,
   ArrowUp,
+  BarChart2,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -12,9 +13,13 @@ import {
   Flame,
   FolderPlus,
   Heart,
+  History,
+  Library,
+  ListMusic,
   ListPlus,
   Loader2,
   Lock,
+  LogOut,
   Moon,
   Music,
   Pause,
@@ -23,11 +28,13 @@ import {
   Radio,
   RefreshCw,
   Search,
+  Settings,
   Share2,
   Shuffle,
   Sparkles,
   Trash2,
   TrendingUp,
+  User,
   UserCheck,
   UserPlus,
   WifiOff,
@@ -1034,6 +1041,58 @@ export const SearchView: React.FC<SearchViewProps> = ({
   const [remoteResults, setRemoteResults] = useState<Track[] | null>(null);
   const [isSearchingRemote, setIsSearchingRemote] = useState(false);
 
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('musicmine_recent_searches');
+      return saved ? JSON.parse(saved).slice(0, 5) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveRecentSearch = (rawTerm: string) => {
+    const term = rawTerm.trim();
+    if (!term) return;
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== term.toLowerCase());
+      const updated = [term, ...filtered].slice(0, 5);
+      try {
+        localStorage.setItem('musicmine_recent_searches', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const removeRecentSearch = (termToRemove: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecentSearches((prev) => {
+      const updated = prev.filter((item) => item !== termToRemove);
+      try {
+        localStorage.setItem('musicmine_recent_searches', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const clearRecentSearches = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem('musicmine_recent_searches');
+    } catch {}
+  };
+
+  const trendingSearches = [
+    { term: 'Aaj Ki Raat', subtitle: 'Stree 2 · Trending #1', tag: '🔥 #1 Trending' },
+    { term: 'Arijit Singh', subtitle: '42.6M Listeners', tag: 'Top Artist' },
+    { term: 'Tauba Tauba', subtitle: 'Bad Newz · Viral', tag: '⚡ Viral' },
+    { term: 'Diljit Dosanjh', subtitle: 'MoonChild Era', tag: 'Popular' },
+    { term: 'Apna Bana Le', subtitle: 'Bhediya · Romantic', tag: 'Romantic' },
+    { term: 'Kesariya', subtitle: 'Brahmāstra', tag: 'Chartbuster' },
+    { term: 'Sachin-Jigar', subtitle: '18.4M Listeners', tag: 'Composer' },
+    { term: 'A.R. Rahman', subtitle: 'Rockstar & Classics', tag: 'Legend' },
+  ];
+
   const visibleTracks = useMemo(
     () => tracks.filter((t) => t.visibleInCatalog),
     [tracks]
@@ -1350,6 +1409,92 @@ export const SearchView: React.FC<SearchViewProps> = ({
           )}
         </div>
 
+        {/* Recent Searches */}
+        {recentSearches.length > 0 && (
+          <div className="space-y-2 pt-1 border-t border-neutral-800/80">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                <History className="w-3.5 h-3.5 text-[#FF0000]" />
+                Recent Searches
+              </span>
+              <button
+                type="button"
+                onClick={clearRecentSearches}
+                className="text-[10px] text-neutral-500 hover:text-[#FF0000] transition-colors cursor-pointer"
+              >
+                Clear all
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {recentSearches.map((term) => (
+                <div
+                  key={`srch-recent-${term}`}
+                  className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 hover:border-[#BC0202]/60 text-xs text-neutral-300 hover:text-white transition-all cursor-pointer shadow-sm"
+                  onClick={() => {
+                    setQuery(term);
+                    saveRecentSearch(term);
+                  }}
+                >
+                  <History className="w-3 h-3 text-neutral-500 group-hover:text-[#FF0000] shrink-0" />
+                  <span className="font-medium truncate max-w-[150px] sm:max-w-[220px]">{term}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => removeRecentSearch(term, e)}
+                    aria-label={`Remove ${term}`}
+                    className="text-neutral-500 hover:text-white p-0.5 rounded cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Real-Time Trending Searches Grid (Matching Top Search) */}
+        {!query && (
+          <div className="space-y-3 pt-2 border-t border-neutral-800/80">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-[#FF0000]" />
+                Trending Searches & Top Charts
+              </span>
+              <span className="text-[10px] text-neutral-400 font-mono flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#FF0000] animate-pulse" />
+                Live Trends
+              </span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {trendingSearches.map((item, idx) => (
+                <button
+                  key={`srch-trend-${idx}`}
+                  type="button"
+                  onClick={() => {
+                    setQuery(item.term);
+                    saveRecentSearch(item.term);
+                  }}
+                  className="p-3 rounded-xl bg-black/60 hover:bg-[#830000]/20 border border-neutral-800 hover:border-[#BC0202]/60 text-left transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
+                >
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <span className="text-[10px] font-mono text-neutral-500 font-bold group-hover:text-neutral-300">
+                      #{idx + 1}
+                    </span>
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25">
+                      {item.tag}
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">
+                    {item.term}
+                  </p>
+                  <p className="text-[10px] text-neutral-400 truncate mt-0.5">
+                    {item.subtitle}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Search suggestions */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-neutral-500">Popular searches:</span>
@@ -1357,7 +1502,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
             <button
               key={sug}
               type="button"
-              onClick={() => setQuery(sug)}
+              onClick={() => {
+                setQuery(sug);
+                saveRecentSearch(sug);
+              }}
               className={`px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${query.toLowerCase() === sug.toLowerCase()
                   ? 'bg-[#830000]/40 border-[#FF0000] text-white'
                   : 'bg-black border-neutral-800 text-neutral-300 hover:border-neutral-700'
@@ -2087,14 +2235,6 @@ export const LibraryAndPlaylistsView: React.FC<LibraryAndPlaylistsViewProps> = (
   const savedAlbums = albums.filter((a) => savedAlbumIds.includes(a.id));
   const followedArtists = artists.filter((ar) => followedArtistIds.includes(ar.id));
 
-  const librarySubNav: { label: string; path: RoutePath }[] = [
-    { label: 'Overview', path: '/library' },
-    { label: `Liked Songs (${likedTracks.length})`, path: '/library/liked' },
-    { label: `Playlists (${playlists.length})`, path: '/playlists' },
-    { label: `Saved Albums (${savedAlbums.length})`, path: '/library/albums' },
-    { label: `History (${history.length})`, path: '/library/history' },
-  ];
-
   // Specific Playlist Detail Route (/playlist/[id])
   if (route.startsWith('/playlist/')) {
     const plId = route.replace('/playlist/', '');
@@ -2302,34 +2442,20 @@ export const LibraryAndPlaylistsView: React.FC<LibraryAndPlaylistsViewProps> = (
     );
   }
 
-  return (
-    <div className="space-y-6 pb-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-white">Your Library</h1>
-          <p className="text-xs text-neutral-400">
-            Saved songs, playlists, and listening history for {currentUser.displayName}
-          </p>
+  // Dedicated Playlists View (/playlists)
+  if (route === '/playlists') {
+    return (
+      <div className="space-y-6 pb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
+          <div>
+            <h1 className="text-2xl font-display font-bold text-white">Your Playlists</h1>
+            <p className="text-xs text-neutral-400">
+              Create, organize, and listen to custom playlists for {currentUser.displayName}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto">
-          {librarySubNav.map((item) => (
-            <button
-              key={item.path}
-              type="button"
-              onClick={() => onNavigate(item.path)}
-              className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${route === item.path
-                  ? 'bg-[#BC0202] text-white'
-                  : 'bg-[#0A0A0A] text-neutral-400 hover:text-white border border-neutral-800'
-                }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Create Playlist Form */}
-      {(route === '/playlists' || route === '/library') && (
+        {/* Create Playlist Form & Playlists Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2 text-white">
@@ -2384,202 +2510,211 @@ export const LibraryAndPlaylistsView: React.FC<LibraryAndPlaylistsViewProps> = (
             </form>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {playlists.map((pl) => (
-              <button
-                key={pl.id}
-                type="button"
-                onClick={() => onNavigate(`/playlist/${pl.id}`)}
-                className="p-4 rounded-xl bg-[#0A0A0A] hover:bg-gradient-to-br hover:from-[#830000]/25 hover:to-[#0A0A0A] border border-neutral-800 text-left flex flex-col justify-between gap-4 transition-colors cursor-pointer"
-              >
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] text-neutral-400">
-                    <span>{pl.isPublic ? 'Public' : 'Private'}</span>
-                    <span>{pl.trackIds.length} songs</span>
-                  </div>
-                  <h3 className="text-base font-display font-bold text-white">{pl.name}</h3>
-                  <p className="text-xs text-neutral-400 line-clamp-2">{pl.description}</p>
-                </div>
-                <span className="text-xs text-[#FF0000] font-medium">
-                  View Playlist →
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Liked Songs Section */}
-      {(route === '/library' || route === '/library/liked') && (
-        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-display font-semibold text-white">
-              Liked Songs ({likedTracks.length})
-            </h2>
-            {likedTracks.length > 0 && (
-              <button
-                type="button"
-                onClick={() => onPlayTrack(likedTracks[0], likedTracks)}
-                className="px-3.5 py-1.5 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer"
-              >
-                Play All
-              </button>
+          <div className="lg:col-span-7">
+            {playlists.length === 0 ? (
+              <div className="p-8 text-center bg-[#0A0A0A] border border-neutral-800 rounded-xl">
+                <p className="text-sm text-neutral-400">No playlists yet. Create your first playlist using the form.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {playlists.map((pl) => (
+                  <button
+                    key={pl.id}
+                    type="button"
+                    onClick={() => onNavigate(`/playlist/${pl.id}` as RoutePath)}
+                    className="p-4 rounded-xl bg-[#0A0A0A] hover:bg-gradient-to-br hover:from-[#830000]/25 hover:to-[#0A0A0A] border border-neutral-800 text-left flex flex-col justify-between gap-4 transition-colors cursor-pointer group"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                        <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-800 text-neutral-300">
+                          {pl.isPublic ? 'Public' : 'Private'}
+                        </span>
+                        <span>{pl.trackIds.length} songs</span>
+                      </div>
+                      <h3 className="text-base font-display font-bold text-white group-hover:text-[#FF0000] transition-colors">
+                        {pl.name}
+                      </h3>
+                      <p className="text-xs text-neutral-400 line-clamp-2">{pl.description}</p>
+                    </div>
+                    <span className="text-xs text-[#FF0000] font-medium group-hover:translate-x-1 transition-transform inline-block">
+                      Open Playlist →
+                    </span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-          {likedTracks.length === 0 ? (
-            <p className="text-xs text-neutral-400">No liked songs yet. Tap the heart icon on any track to save it.</p>
-          ) : (
-            <div className="divide-y divide-neutral-800/70">
-              {likedTracks.map((t) => (
-                <div key={t.id} className="py-2.5 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => onPlayTrack(t, likedTracks)}
-                      className="text-sm font-medium text-white hover:text-[#FF0000] truncate block text-left cursor-pointer"
-                    >
-                      {t.cleanTitle}
-                    </button>
-                    <p className="text-xs text-neutral-400">
-                      {t.artistName} · {t.language}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs font-mono tabular-nums text-neutral-400">
-                      {formatDuration(t.duration)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onToggleLike(t.id)}
-                      className="text-[#FF0000] hover:text-neutral-400 cursor-pointer"
-                      aria-label="Remove from liked songs"
-                    >
-                      <Heart className="w-4 h-4 fill-current" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Dedicated Library View (/library)
+  return (
+    <div className="space-y-6 pb-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
+        <div>
+          <h1 className="text-2xl font-display font-bold text-white">Your Library</h1>
+          <p className="text-xs text-neutral-400">
+            Personal music collection and catalog for {currentUser.displayName}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {tracks.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onPlayTrack(tracks[0], tracks)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer shadow-[0_0_15px_rgba(255,0,0,0.35)] transition-all"
+            >
+              <Play className="w-4 h-4 fill-current" />
+              <span>Play Library</span>
+            </button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Saved Albums & Followed Artists */}
-      {(route === '/library' || route === '/library/albums') && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
-            <h2 className="text-base font-display font-semibold text-white">
-              Saved Albums ({savedAlbums.length})
-            </h2>
-            {savedAlbums.map((al) => (
-              <button
-                key={al.id}
-                type="button"
-                onClick={() => onNavigate(`/album/${al.id}`)}
-                className="w-full p-2.5 rounded-lg hover:bg-neutral-900 flex items-center justify-between text-left cursor-pointer"
-              >
-                <div>
-                  <p className="text-sm font-medium text-white">{al.title}</p>
-                  <p className="text-xs text-neutral-400">
-                    {al.artistName} · {al.releaseYear}
-                  </p>
-                </div>
-                <span className="text-xs text-neutral-500">Open →</span>
-              </button>
-            ))}
-          </div>
+      {/* Quick Summary Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-4">
+          <p className="text-xs text-neutral-400">Library Songs</p>
+          <p className="text-2xl font-bold font-mono text-white mt-1">{tracks.length}</p>
+          <p className="text-[11px] text-neutral-500 mt-0.5">Ready to stream</p>
+        </div>
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-4">
+          <p className="text-xs text-neutral-400">Followed Artists</p>
+          <p className="text-2xl font-bold font-mono text-white mt-1">{followedArtists.length}</p>
+          <p className="text-[11px] text-neutral-500 mt-0.5">Artists you track</p>
+        </div>
+        <div className="col-span-2 sm:col-span-1 bg-[#0A0A0A] border border-neutral-800 rounded-xl p-4">
+          <p className="text-xs text-neutral-400">Custom Playlists</p>
+          <p className="text-2xl font-bold font-mono text-[#FF0000] mt-1">{playlists.length}</p>
+          <p className="text-[11px] text-neutral-500 mt-0.5">
+            <button
+              type="button"
+              onClick={() => onNavigate('/playlists')}
+              className="text-[#FF0000] hover:underline cursor-pointer"
+            >
+              Manage Playlists →
+            </button>
+          </p>
+        </div>
+      </div>
 
-          <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
+      {/* Followed Artists Section */}
+      {followedArtists.length > 0 && (
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
             <h2 className="text-base font-display font-semibold text-white">
               Followed Artists ({followedArtists.length})
             </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {followedArtists.map((ar) => (
               <button
                 key={ar.id}
                 type="button"
-                onClick={() => onNavigate(`/artist/${ar.id}`)}
-                className="w-full p-2.5 rounded-lg hover:bg-neutral-900 flex items-center justify-between text-left cursor-pointer"
+                onClick={() => onNavigate(`/artist/${ar.id}` as RoutePath)}
+                className="p-3 rounded-lg bg-black border border-neutral-800/80 hover:border-[#BC0202]/60 hover:bg-neutral-900/60 flex items-center justify-between text-left cursor-pointer transition-colors"
               >
                 <div>
-                  <p className="text-sm font-medium text-white">{ar.name}</p>
+                  <p className="text-sm font-semibold text-white">{ar.name}</p>
                   <p className="text-xs text-neutral-400">{ar.primaryLanguage}</p>
                 </div>
-                <span className="text-xs text-neutral-500">Profile →</span>
+                <span className="text-xs text-[#FF0000]">View →</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Listening History */}
-      {(route === '/library' || route === '/library/history') && (
-        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="text-base font-display font-semibold text-white">
-                Listening History ({history.length})
-              </h2>
-              <p className="text-xs text-neutral-400">
-                Only visible to you
-              </p>
-            </div>
-            {history.length > 0 && (
-              <button
-                type="button"
-                onClick={onClearHistory}
-                className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-[#830000]/40 text-xs text-neutral-300 border border-neutral-800 cursor-pointer"
-              >
-                Clear History
-              </button>
-            )}
-          </div>
-          {history.length === 0 ? (
-            <p className="text-xs text-neutral-400">Your listening history is empty.</p>
-          ) : (
-            <div className="divide-y divide-neutral-800/70 text-xs">
-              {history.map((evt) => {
-                const trk = tracks.find((t) => t.id === evt.trackId);
-                if (!trk) return null;
-                return (
-                  <div key={evt.id} className="py-2.5 flex items-center justify-between gap-4">
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => onPlayTrack(trk)}
-                        className="text-sm font-medium text-white hover:text-[#FF0000] cursor-pointer"
-                      >
-                        {trk.cleanTitle}
-                      </button>
-                      <p className="text-neutral-400">
-                        {trk.artistName} · {formatDuration(evt.listenedSeconds)}
-                      </p>
-                    </div>
-                    <span className="font-mono tabular-nums text-neutral-500">
-                      {evt.playedAt.slice(0, 10)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+      {/* Library Tracks Collection */}
+      <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-display font-semibold text-white">
+            Library Songs ({tracks.length})
+          </h2>
+          {tracks.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                const shuffled = [...tracks].sort(() => Math.random() - 0.5);
+                onPlayTrack(shuffled[0], shuffled);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-xs text-neutral-300 hover:text-white border border-neutral-800 cursor-pointer"
+            >
+              <Shuffle className="w-3.5 h-3.5" />
+              <span>Shuffle</span>
+            </button>
           )}
         </div>
-      )}
+
+        <div className="divide-y divide-neutral-800/70">
+          {tracks.map((t, idx) => {
+            const isLiked = likedTrackIds.includes(t.id);
+            return (
+              <div key={t.id} className="py-2.5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xs font-mono tabular-nums text-neutral-500 w-5">
+                    {idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onPlayTrack(t, tracks)}
+                    className="text-left min-w-0 cursor-pointer"
+                  >
+                    <p className="text-sm font-medium text-white hover:text-[#FF0000] truncate">
+                      {t.cleanTitle}
+                    </p>
+                    <p className="text-xs text-neutral-400 truncate">
+                      {t.artistName} · {t.language}
+                    </p>
+                  </button>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs font-mono tabular-nums text-neutral-400">
+                    {formatDuration(t.duration)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onToggleLike(t.id)}
+                    className={`p-1 rounded cursor-pointer transition-colors ${
+                      isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                    }`}
+                    aria-label={isLiked ? 'Unlike song' : 'Like song'}
+                  >
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
 
 /* -------------------------------------------------------------------------- */
-/* 5. Profile, Settings & Personal Statistics Views                           */
+/* 5. Profile, Settings, Stats, Liked Songs & History Views                   */
 /* -------------------------------------------------------------------------- */
 interface ProfileSettingsStatsViewProps {
-  route: '/profile' | '/settings' | '/stats';
+  route: RoutePath;
   currentUser: UserAccount | null;
   tracks: Track[];
+  albums: Album[];
+  artists: Artist[];
+  likedTrackIds: string[];
+  savedAlbumIds: string[];
   history: ListeningEvent[];
+  playlists: Playlist[];
   themeMode: ThemeMode;
   onSetThemeMode: (mode: ThemeMode) => void;
   onUpdateProfile: (displayName: string, bio: string, privateHistory: boolean, publicProfile: boolean) => void;
   onLogout: () => void;
+  onPlayTrack: (track: Track, contextQueue?: Track[]) => void;
+  onToggleLike: (trackId: string) => void;
+  onClearHistory: () => void;
   onNavigate: (path: RoutePath) => void;
   onNotify: (msg: string) => void;
 }
@@ -2588,11 +2723,19 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
   route,
   currentUser,
   tracks,
+  albums,
+  artists,
+  likedTrackIds,
+  savedAlbumIds,
   history,
+  playlists,
   themeMode,
   onSetThemeMode,
   onUpdateProfile,
   onLogout,
+  onPlayTrack,
+  onToggleLike,
+  onClearHistory,
   onNavigate,
   onNotify,
 }) => {
@@ -2605,237 +2748,500 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
   const [statsTimeframe, setStatsTimeframe] = useState<'weekly' | 'monthly' | 'yearly'>('monthly');
   const [showAnnualRecap, setShowAnnualRecap] = useState(false);
 
+  // Tab Selection
+  type ProfileTab = 'profile' | 'overview' | 'liked' | 'albums' | 'history' | 'settings';
+  const getInitialTab = (): ProfileTab => {
+    if (route === '/settings') return 'settings';
+    if (route === '/stats') return 'overview';
+    if (route === '/library/liked') return 'liked';
+    if (route === '/library/albums') return 'albums';
+    if (route === '/library/history') return 'history';
+    return 'profile';
+  };
+
+  const [activeTab, setActiveTab] = useState<ProfileTab>(getInitialTab);
+
+  useEffect(() => {
+    if (route === '/settings') setActiveTab('settings');
+    else if (route === '/stats') setActiveTab('overview');
+    else if (route === '/library/liked') setActiveTab('liked');
+    else if (route === '/library/albums') setActiveTab('albums');
+    else if (route === '/library/history') setActiveTab('history');
+    else if (route === '/profile') setActiveTab('profile');
+  }, [route]);
+
   if (!currentUser) {
     return (
       <AuthGuardCard
         currentUser={null}
         onNavigate={onNavigate}
-        featureName={route === '/stats' ? 'Listening Statistics' : 'Profile & Settings'}
+        featureName="Profile, Liked Songs & Settings"
       />
     );
   }
 
-  if (route === '/stats') {
-    const totalSeconds = history.reduce((acc, e) => acc + e.listenedSeconds, 0);
-    const multiplier = statsTimeframe === 'weekly' ? 1 : statsTimeframe === 'monthly' ? 4 : 42;
-    const totalMinutes = Math.round((totalSeconds * multiplier) / 60);
+  const likedTracks = tracks.filter((t) => likedTrackIds.includes(t.id));
+  const savedAlbums = albums.filter((a) => savedAlbumIds.includes(a.id));
 
-    return (
-      <div className="space-y-6 pb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-800">
+  const totalSeconds = history.reduce((acc, e) => acc + e.listenedSeconds, 0);
+  const multiplier = statsTimeframe === 'weekly' ? 1 : statsTimeframe === 'monthly' ? 4 : 42;
+  const totalMinutes = Math.round((totalSeconds * multiplier) / 60);
+
+  const profileTabs: { id: ProfileTab; label: string; icon: React.FC<{ className?: string }> }[] = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'overview', label: 'Overview', icon: BarChart2 },
+    { id: 'liked', label: `Liked Songs (${likedTracks.length})`, icon: Heart },
+    { id: 'albums', label: `Saved Albums (${savedAlbums.length})`, icon: Disc },
+    { id: 'history', label: `History (${history.length})`, icon: History },
+    { id: 'settings', label: 'Settings', icon: Settings },
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+      {/* Profile Header Card */}
+      <div className="bg-[#0A0A0A] border border-neutral-800 rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#830000] via-[#BC0202] to-[#FF0000] flex items-center justify-center text-white text-2xl font-bold font-display shadow-[0_0_20px_rgba(255,0,0,0.4)] shrink-0">
+            {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U'}
+          </div>
           <div>
-            <h1 className="text-2xl font-display font-bold text-white">
-              Listening Statistics
-            </h1>
-            <p className="text-xs text-neutral-400">
-              Your personal listening activity and top artists
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            {(['weekly', 'monthly', 'yearly'] as const).map((tf) => (
-              <button
-                key={tf}
-                type="button"
-                onClick={() => setStatsTimeframe(tf)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize cursor-pointer ${statsTimeframe === tf
-                    ? 'bg-[#BC0202] text-white'
-                    : 'bg-[#0A0A0A] text-neutral-400 border border-neutral-800'
-                  }`}
-              >
-                {tf}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setShowAnnualRecap((prev) => !prev)}
-              className="px-3.5 py-1.5 rounded-lg bg-[#830000]/40 border border-[#FF0000] text-white text-xs font-semibold cursor-pointer"
-            >
-              {showAnnualRecap ? 'Close Recap' : '2026 Recap'}
-            </button>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-display font-bold text-white">{currentUser.displayName}</h1>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-900 border border-neutral-800 text-neutral-400 capitalize">
+                {currentUser.role}
+              </span>
+            </div>
+            <p className="text-xs text-neutral-400 mt-0.5">{currentUser.email}</p>
+            <p className="text-xs text-neutral-500 mt-1 line-clamp-1">{currentUser.bio}</p>
           </div>
         </div>
 
-        {showAnnualRecap && (
-          <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#830000]/60 via-[#BC0202]/25 to-black border border-[#FF0000] space-y-3">
-            <p className="text-xs font-mono text-[#FF0000]">2026 ANNUAL RECAP</p>
-            <h2 className="text-2xl font-display font-bold text-white">
-              Your Top Soundscape: Multilingual Nocturnes & Soundtracks
-            </h2>
-            <p className="text-sm text-neutral-200 max-w-2xl">
-              You listened across 5 languages with Sachin-Jigar and A.R. Rahman leading your late-night sessions.
-            </p>
+        {/* Quick stat counters */}
+        <div className="flex items-center gap-4 sm:gap-6 shrink-0 text-center sm:text-right">
+          <div>
+            <p className="text-base sm:text-lg font-bold font-mono text-white">{likedTracks.length}</p>
+            <p className="text-[11px] text-neutral-400">Liked Songs</p>
           </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-1">
-            <p className="text-xs text-neutral-400">Listening Time ({statsTimeframe})</p>
-            <p className="text-3xl font-display font-bold font-mono tabular-nums text-white">
-              {totalMinutes} mins
-            </p>
-            <p className="text-xs text-neutral-500">97% average completion</p>
+          <div className="w-px h-8 bg-neutral-800" />
+          <div>
+            <p className="text-base sm:text-lg font-bold font-mono text-white">{playlists.length}</p>
+            <p className="text-[11px] text-neutral-400">Playlists</p>
           </div>
-          <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-1">
-            <p className="text-xs text-neutral-400">Top Languages</p>
-            <p className="text-3xl font-display font-bold text-white">Hindi & Tamil</p>
-            <p className="text-xs text-neutral-500">Followed by Punjabi & English</p>
-          </div>
-          <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-1">
-            <p className="text-xs text-neutral-400">Top Artist</p>
-            <p className="text-3xl font-display font-bold text-[#FF0000]">Sachin-Jigar</p>
-            <p className="text-xs text-neutral-500">Stree 2 Soundtrack</p>
-          </div>
-        </div>
-
-        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
-          <h2 className="text-base font-display font-semibold text-white">
-            Most Played Songs ({statsTimeframe})
-          </h2>
-          <div className="divide-y divide-neutral-800/70 text-xs">
-            {tracks.slice(0, 5).map((t, i) => (
-              <div key={t.id} className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono tabular-nums text-neutral-500 w-5">{i + 1}</span>
-                  <div>
-                    <p className="text-sm font-medium text-white">{t.cleanTitle}</p>
-                    <p className="text-neutral-400">{t.artistName} · {t.language}</p>
-                  </div>
-                </div>
-                <span className="font-mono tabular-nums text-neutral-300">
-                  {(6 - i) * multiplier} plays
-                </span>
-              </div>
-            ))}
+          <div className="w-px h-8 bg-neutral-800" />
+          <div>
+            <p className="text-base sm:text-lg font-bold font-mono text-white">{history.length}</p>
+            <p className="text-[11px] text-neutral-400">History</p>
           </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-8">
-      <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-6 space-y-5">
-        <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
-          <div>
-            <h1 className="text-2xl font-display font-bold text-white">
-              {route === '/profile' ? 'Profile' : 'Account & Theme Settings'}
-            </h1>
-            <p className="text-xs text-neutral-400">
-              {currentUser.email}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+      {/* Tabs Switcher Navigation */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-neutral-800 scrollbar-none">
+        {profileTabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
             <button
+              key={tab.id}
               type="button"
-              onClick={() => onNavigate(route === '/profile' ? '/settings' : '/profile')}
-              className="px-3 py-1.5 rounded-lg bg-neutral-900 text-xs text-neutral-200 border border-neutral-800 cursor-pointer"
+              onClick={() => setActiveTab(tab.id)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
+                isActive
+                  ? 'bg-[#BC0202] text-white shadow-[0_0_15px_rgba(255,0,0,0.35)]'
+                  : 'bg-[#0A0A0A] hover:bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+              }`}
             >
-              {route === '/profile' ? 'Settings' : 'Profile'}
+              <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
+              <span>{tab.label}</span>
             </button>
-            <button
-              type="button"
-              onClick={onLogout}
-              className="px-3 py-1.5 rounded-lg bg-[#830000]/30 text-xs text-[#FF0000] border border-[#BC0202]/50 cursor-pointer"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
+          );
+        })}
+      </div>
 
-        {/* Theme Selector */}
-        <div className="space-y-2">
-          <label className="block text-xs font-semibold text-white">
-            Appearance
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {(
-              [
-                { id: 'amoled', label: 'AMOLED Black' },
-                { id: 'dark', label: 'Dark Carbon' },
-                { id: 'light', label: 'High-Contrast Light' },
-              ] as const
-            ).map((t) => (
+      {/* 1. Tab: Profile */}
+      {activeTab === 'profile' && (
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-6 space-y-5 animate-in fade-in duration-150">
+          <div className="border-b border-neutral-800 pb-3">
+            <h2 className="text-base font-display font-semibold text-white">Profile Details</h2>
+            <p className="text-xs text-neutral-400">Update your public listener identity</p>
+          </div>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onUpdateProfile(nameInput, bioInput, privHistory, pubProfile);
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1">Display Name</label>
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-black border border-neutral-800 text-sm text-white focus:border-[#FF0000] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1">Bio</label>
+              <textarea
+                rows={3}
+                value={bioInput}
+                onChange={(e) => setBioInput(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-black border border-neutral-800 text-sm text-white focus:border-[#FF0000] focus:outline-none"
+              />
+            </div>
+            <div className="space-y-2.5 text-xs text-neutral-300 pt-2 border-t border-neutral-800">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={privHistory}
+                  onChange={(e) => setPrivHistory(e.target.checked)}
+                  className="accent-[#BC0202] w-4 h-4"
+                />
+                <span>Keep listening history private</span>
+              </label>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={pubProfile}
+                  onChange={(e) => setPubProfile(e.target.checked)}
+                  className="accent-[#BC0202] w-4 h-4"
+                />
+                <span>Allow public profile discovery</span>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
               <button
-                key={t.id}
-                type="button"
-                onClick={() => onSetThemeMode(t.id)}
-                className={`p-3 rounded-xl border text-left text-xs font-medium transition-colors cursor-pointer ${themeMode === t.id
-                    ? 'bg-[#830000]/35 border-[#FF0000] text-white'
-                    : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-                  }`}
+                type="submit"
+                className="px-5 py-2.5 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer shadow-sm transition-colors"
               >
-                {t.label}
+                Save Changes
               </button>
-            ))}
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  onNotify('Account deletion requested.');
+                }}
+                className="text-xs text-neutral-500 hover:text-[#FF0000] cursor-pointer"
+              >
+                Delete Account
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* 2. Tab: Overview / Stats */}
+      {activeTab === 'overview' && (
+        <div className="space-y-5 animate-in fade-in duration-150">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-neutral-800">
+            <div>
+              <h2 className="text-base font-display font-semibold text-white">Listening Statistics</h2>
+              <p className="text-xs text-neutral-400">Personal activity and breakdown</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {(['weekly', 'monthly', 'yearly'] as const).map((tf) => (
+                <button
+                  key={tf}
+                  type="button"
+                  onClick={() => setStatsTimeframe(tf)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize cursor-pointer transition-colors ${
+                    statsTimeframe === tf
+                      ? 'bg-[#BC0202] text-white'
+                      : 'bg-[#0A0A0A] text-neutral-400 border border-neutral-800'
+                  }`}
+                >
+                  {tf}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setShowAnnualRecap((prev) => !prev)}
+                className="px-3.5 py-1.5 rounded-lg bg-[#830000]/40 border border-[#FF0000] text-white text-xs font-semibold cursor-pointer"
+              >
+                {showAnnualRecap ? 'Close Recap' : '2026 Recap'}
+              </button>
+            </div>
+          </div>
+
+          {showAnnualRecap && (
+            <div className="p-6 sm:p-7 rounded-2xl bg-gradient-to-r from-[#830000]/60 via-[#BC0202]/25 to-black border border-[#FF0000] space-y-2 shadow-2xl">
+              <p className="text-xs font-mono text-[#FF0000] uppercase font-bold">2026 Annual Recap</p>
+              <h3 className="text-xl font-display font-bold text-white">
+                Your Top Soundscape: Multilingual Nocturnes & Soundtracks
+              </h3>
+              <p className="text-xs sm:text-sm text-neutral-200 max-w-2xl">
+                You listened across 5 languages with Sachin-Jigar and A.R. Rahman leading your late-night sessions.
+              </p>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-1">
+              <p className="text-xs text-neutral-400">Listening Time ({statsTimeframe})</p>
+              <p className="text-3xl font-display font-bold font-mono tabular-nums text-white">
+                {totalMinutes} mins
+              </p>
+              <p className="text-xs text-neutral-500">97% average completion</p>
+            </div>
+            <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-1">
+              <p className="text-xs text-neutral-400">Top Languages</p>
+              <p className="text-3xl font-display font-bold text-white">Hindi & Tamil</p>
+              <p className="text-xs text-neutral-500">Followed by Punjabi & English</p>
+            </div>
+            <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-1">
+              <p className="text-xs text-neutral-400">Top Artist</p>
+              <p className="text-3xl font-display font-bold text-[#FF0000]">Sachin-Jigar</p>
+              <p className="text-xs text-neutral-500">Stree 2 Soundtrack</p>
+            </div>
+          </div>
+
+          <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
+            <h3 className="text-sm font-display font-semibold text-white">
+              Most Played Songs ({statsTimeframe})
+            </h3>
+            <div className="divide-y divide-neutral-800/70 text-xs">
+              {tracks.slice(0, 5).map((t, i) => (
+                <div key={t.id} className="py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-mono tabular-nums text-neutral-500 w-5">{i + 1}</span>
+                    <button
+                      type="button"
+                      onClick={() => onPlayTrack(t, tracks)}
+                      className="text-left cursor-pointer truncate"
+                    >
+                      <p className="text-sm font-medium text-white hover:text-[#FF0000] truncate">{t.cleanTitle}</p>
+                      <p className="text-neutral-400">{t.artistName} · {t.language}</p>
+                    </button>
+                  </div>
+                  <span className="font-mono tabular-nums text-neutral-300 shrink-0 ml-2">
+                    {(6 - i) * multiplier} plays
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+      )}
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            onUpdateProfile(nameInput, bioInput, privHistory, pubProfile);
-          }}
-          className="space-y-4 pt-2 border-t border-neutral-800"
+      {/* 3. Tab: Liked Songs */}
+      {activeTab === 'liked' && (
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4 animate-in fade-in duration-150">
+          <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+            <div>
+              <h2 className="text-base font-display font-semibold text-white">
+                Liked Songs ({likedTracks.length})
+              </h2>
+              <p className="text-xs text-neutral-400">Your favorite tracks saved with heart</p>
+            </div>
+            {likedTracks.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onPlayTrack(likedTracks[0], likedTracks)}
+                className="px-3.5 py-1.5 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer shadow-sm transition-colors"
+              >
+                Play All
+              </button>
+            )}
+          </div>
+
+          {likedTracks.length === 0 ? (
+            <div className="py-8 text-center text-xs text-neutral-400 space-y-2">
+              <Heart className="w-8 h-8 text-neutral-600 mx-auto" />
+              <p>No liked songs yet.</p>
+              <p className="text-neutral-500">Tap the heart icon on any track to save it here.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-neutral-800/70">
+              {likedTracks.map((t, idx) => (
+                <div key={t.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs font-mono tabular-nums text-neutral-500 w-5">
+                      {idx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onPlayTrack(t, likedTracks)}
+                      className="text-left min-w-0 cursor-pointer"
+                    >
+                      <p className="text-sm font-medium text-white hover:text-[#FF0000] truncate">
+                        {t.cleanTitle}
+                      </p>
+                      <p className="text-xs text-neutral-400 truncate">
+                        {t.artistName} · {t.language}
+                      </p>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-xs font-mono tabular-nums text-neutral-400">
+                      {formatDuration(t.duration)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onToggleLike(t.id)}
+                      className="text-[#FF0000] hover:text-neutral-400 cursor-pointer p-1 transition-colors"
+                      aria-label="Remove from liked songs"
+                    >
+                      <Heart className="w-4 h-4 fill-current" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 4. Tab: Saved Albums */}
+      {activeTab === 'albums' && (
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4 animate-in fade-in duration-150">
+          <div className="pb-3 border-b border-neutral-800">
+            <h2 className="text-base font-display font-semibold text-white">
+              Saved Albums ({savedAlbums.length})
+            </h2>
+            <p className="text-xs text-neutral-400">Albums saved to your account</p>
+          </div>
+
+          {savedAlbums.length === 0 ? (
+            <div className="py-8 text-center text-xs text-neutral-400 space-y-2">
+              <Disc className="w-8 h-8 text-neutral-600 mx-auto" />
+              <p>No saved albums yet.</p>
+              <p className="text-neutral-500">Explore albums and tap save to keep them here.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {savedAlbums.map((al) => (
+                <button
+                  key={al.id}
+                  type="button"
+                  onClick={() => onNavigate(`/album/${al.id}` as RoutePath)}
+                  className="p-3.5 rounded-xl bg-black border border-neutral-800 hover:border-[#BC0202]/60 hover:bg-neutral-900/60 flex items-center justify-between text-left cursor-pointer transition-colors group"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-white group-hover:text-[#FF0000] transition-colors">
+                      {al.title}
+                    </p>
+                    <p className="text-xs text-neutral-400">
+                      {al.artistName} · {al.releaseYear}
+                    </p>
+                  </div>
+                  <span className="text-xs text-[#FF0000] font-medium group-hover:translate-x-1 transition-transform">
+                    Open →
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5. Tab: History */}
+      {activeTab === 'history' && (
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4 animate-in fade-in duration-150">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-neutral-800">
+            <div>
+              <h2 className="text-base font-display font-semibold text-white">
+                Listening History ({history.length})
+              </h2>
+              <p className="text-xs text-neutral-400">Private to you</p>
+            </div>
+            {history.length > 0 && (
+              <button
+                type="button"
+                onClick={onClearHistory}
+                className="px-3 py-1.5 rounded-lg bg-neutral-900 hover:bg-[#830000]/40 text-xs text-neutral-300 hover:text-white border border-neutral-800 cursor-pointer transition-colors"
+              >
+                Clear History
+              </button>
+            )}
+          </div>
+
+          {history.length === 0 ? (
+            <div className="py-8 text-center text-xs text-neutral-400 space-y-2">
+              <History className="w-8 h-8 text-neutral-600 mx-auto" />
+              <p>Your listening history is empty.</p>
+              <p className="text-neutral-500">Play tracks to see your playback log here.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-neutral-800/70 text-xs">
+              {history.map((evt) => {
+                const trk = tracks.find((t) => t.id === evt.trackId);
+                if (!trk) return null;
+                return (
+                  <div key={evt.id} className="py-2.5 flex items-center justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <button
+                        type="button"
+                        onClick={() => onPlayTrack(trk)}
+                        className="text-sm font-medium text-white hover:text-[#FF0000] cursor-pointer truncate text-left block"
+                      >
+                        {trk.cleanTitle}
+                      </button>
+                      <p className="text-neutral-400 truncate">
+                        {trk.artistName} · {formatDuration(evt.listenedSeconds)}
+                      </p>
+                    </div>
+                    <span className="font-mono tabular-nums text-neutral-500 shrink-0">
+                      {evt.playedAt.slice(0, 10)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 6. Tab: Settings */}
+      {activeTab === 'settings' && (
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-6 space-y-5 animate-in fade-in duration-150">
+          <div className="border-b border-neutral-800 pb-3">
+            <h2 className="text-base font-display font-semibold text-white">Appearance &amp; Settings</h2>
+            <p className="text-xs text-neutral-400">Customize the look and interface feel</p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-xs font-semibold text-white">Theme Display Mode</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(
+                [
+                  { id: 'amoled', label: 'AMOLED Black', desc: 'True pitch black, max battery saving' },
+                  { id: 'dark', label: 'Dark Carbon', desc: 'Subtle charcoal background' },
+                  { id: 'light', label: 'High-Contrast Light', desc: 'Bright daylight mode' },
+                ] as const
+              ).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onSetThemeMode(t.id)}
+                  className={`p-4 rounded-xl border text-left text-xs font-medium transition-colors cursor-pointer ${
+                    themeMode === t.id
+                      ? 'bg-[#830000]/35 border-[#FF0000] text-white shadow-[0_0_15px_rgba(255,0,0,0.25)]'
+                      : 'bg-black border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700'
+                  }`}
+                >
+                  <p className="font-semibold text-sm text-white">{t.label}</p>
+                  <p className="text-[11px] text-neutral-400 mt-1">{t.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sign Out Button at the Very Bottom */}
+      <div className="pt-8 pb-4 border-t border-neutral-800/80 flex items-center justify-center">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3 rounded-xl bg-neutral-900/90 hover:bg-[#830000]/40 text-neutral-300 hover:text-[#FF0000] border border-neutral-800 hover:border-[#BC0202]/60 text-sm font-semibold transition-all cursor-pointer shadow-sm"
         >
-          <div>
-            <label className="block text-xs font-medium text-neutral-300 mb-1">
-              Display Name
-            </label>
-            <input
-              type="text"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-lg bg-black border border-neutral-800 text-sm text-white"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-neutral-300 mb-1">Bio</label>
-            <textarea
-              rows={2}
-              value={bioInput}
-              onChange={(e) => setBioInput(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-lg bg-black border border-neutral-800 text-sm text-white"
-            />
-          </div>
-          <div className="space-y-2 text-xs text-neutral-300">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={privHistory}
-                onChange={(e) => setPrivHistory(e.target.checked)}
-                className="accent-[#BC0202]"
-              />
-              <span>Keep listening history private</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={pubProfile}
-                onChange={(e) => setPubProfile(e.target.checked)}
-                className="accent-[#BC0202]"
-              />
-              <span>Allow public profile discovery</span>
-            </label>
-          </div>
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="submit"
-              className="px-5 py-2 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer"
-            >
-              Save Changes
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onLogout();
-                onNotify('Account deletion requested.');
-              }}
-              className="text-xs text-neutral-500 hover:text-[#FF0000] cursor-pointer"
-            >
-              Delete Account
-            </button>
-          </div>
-        </form>
+          <LogOut className="w-4 h-4 text-[#FF0000]" />
+          <span>Sign Out</span>
+        </button>
       </div>
     </div>
   );

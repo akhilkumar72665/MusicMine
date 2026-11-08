@@ -829,9 +829,9 @@ export function MusicMineWebsiteApp() {
         : 'bg-neutral-950 text-white';
 
   return (
-    <div className={`min-h-screen h-screen flex flex-col overflow-hidden ${shellBgClass}`}>
+    <div className={`fixed inset-0 w-full h-[100dvh] max-h-[100dvh] flex flex-col overflow-hidden ${shellBgClass}`}>
       {/* Top Navigation Bar */}
-      <header className="h-16 px-4 lg:px-8 border-b border-neutral-800 bg-black flex items-center justify-between gap-4 sm:gap-8 shrink-0 z-30">
+      <header className="h-16 px-4 lg:px-8 border-b border-neutral-800 bg-black flex items-center justify-between gap-4 sm:gap-8 shrink-0 z-30 sticky top-0">
         {/* Zone 1: Brand Wordmark Matching Reference Image (Red Equalizer Icon + MusicMine) */}
         <div className="flex items-center gap-3 shrink-0">
           {canGoBack && (
@@ -1386,8 +1386,8 @@ export function MusicMineWebsiteApp() {
                         <div
                           key={`mob-srch-${track.id}`}
                           className={`p-2.5 rounded-xl flex items-center justify-between gap-3 transition-colors ${isCurrent
-                              ? 'bg-[#830000]/30 border border-[#FF0000]/40'
-                              : 'bg-neutral-950/80 hover:bg-neutral-900 border border-neutral-800/70'
+                            ? 'bg-[#830000]/30 border border-[#FF0000]/40'
+                            : 'bg-neutral-950/80 hover:bg-neutral-900 border border-neutral-800/70'
                             }`}
                         >
                           <button
@@ -1702,20 +1702,16 @@ export function MusicMineWebsiteApp() {
 
             <div className="space-y-1">
               <p className="px-3 text-[11px] font-mono text-neutral-500 uppercase tracking-wider mb-1.5">
-                Your Library
+                Collection
               </p>
               {(
                 [
                   { label: 'Library', path: '/library', icon: Library },
-                  { label: 'Liked Songs', path: '/library/liked', icon: Heart },
                   { label: 'Playlists', path: '/playlists', icon: ListMusic },
-                  { label: 'Albums', path: '/library/albums', icon: Disc },
-                  { label: 'History', path: '/library/history', icon: History },
-                  { label: 'Stats', path: '/stats', icon: BarChart2 },
                 ] as const
               ).map((item) => {
                 const Icon = item.icon;
-                const active = route === item.path;
+                const active = route === item.path || (item.path === '/playlists' && route.startsWith('/playlist/'));
                 return (
                   <button
                     key={item.path}
@@ -1735,53 +1731,18 @@ export function MusicMineWebsiteApp() {
 
             <div className="space-y-1">
               <p className="px-3 text-[11px] font-mono text-neutral-500 uppercase tracking-wider mb-1.5">
-                Playlists
-              </p>
-              {playlists.map((pl) => {
-                const plPath: RoutePath = `/playlist/${pl.id}`;
-                const active = route === plPath;
-                return (
-                  <button
-                    key={pl.id}
-                    type="button"
-                    onClick={() => setRoute(plPath)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${active
-                      ? 'bg-[#830000]/40 text-[#FF0000] font-semibold'
-                      : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
-                      }`}
-                  >
-                    <FolderHeart className="w-3.5 h-3.5 shrink-0 text-[#BC0202]" />
-                    <span className="truncate">{pl.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="space-y-1">
-              <p className="px-3 text-[11px] font-mono text-neutral-500 uppercase tracking-wider mb-1.5">
                 Account
               </p>
               <button
                 type="button"
                 onClick={() => setRoute('/profile')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/profile'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/profile' || route === '/settings' || route === '/stats' || route.startsWith('/library/')
                   ? 'bg-[#BC0202] text-white'
                   : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 <User className="w-4 h-4 shrink-0" />
                 <span>Profile</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRoute('/settings')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/settings'
-                  ? 'bg-[#BC0202] text-white'
-                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                  }`}
-              >
-                <Settings className="w-4 h-4 shrink-0" />
-                <span>Settings</span>
               </button>
               <button
                 type="button"
@@ -1828,29 +1789,7 @@ export function MusicMineWebsiteApp() {
         </aside>
 
         {/* Main Scrollable Viewport */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6">
-          {/* Sub-Page Back Navigation Bar */}
-          {route !== '/' && (
-            <div className="flex items-center justify-between gap-3 pb-1">
-              <button
-                type="button"
-                onClick={handleGoBack}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0D0D0D] hover:bg-[#BC0202] text-white text-xs font-semibold border border-neutral-800 hover:border-[#FF0000] transition-colors cursor-pointer"
-              >
-                <ArrowLeft className="w-4 h-4 text-[#FF0000] group-hover:text-white" />
-                <span>Back</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRoute('/')}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black hover:bg-neutral-900 text-neutral-400 hover:text-white text-xs border border-neutral-800 transition-colors cursor-pointer"
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span>Home</span>
-              </button>
-            </div>
-          )}
+        <main className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6 overscroll-contain">
 
           {/* Toast Notification Banner */}
           {toastMessage && (
@@ -1962,9 +1901,6 @@ export function MusicMineWebsiteApp() {
             )}
 
             {(route === '/library' ||
-              route === '/library/liked' ||
-              route === '/library/history' ||
-              route === '/library/albums' ||
               route === '/playlists' ||
               route.startsWith('/playlist/')) && (
                 <LibraryAndPlaylistsView
@@ -1994,12 +1930,22 @@ export function MusicMineWebsiteApp() {
                 />
               )}
 
-            {(route === '/profile' || route === '/settings' || route === '/stats') && (
+            {(route === '/profile' ||
+              route === '/settings' ||
+              route === '/stats' ||
+              route === '/library/liked' ||
+              route === '/library/albums' ||
+              route === '/library/history') && (
               <ProfileSettingsStatsView
                 route={route}
                 currentUser={currentUser}
                 tracks={tracks}
+                albums={albums}
+                artists={artists}
+                likedTrackIds={likedTrackIds}
+                savedAlbumIds={savedAlbumIds}
                 history={history}
+                playlists={playlists}
                 themeMode={themeMode}
                 onSetThemeMode={(m) => {
                   setThemeMode(m);
@@ -2014,6 +1960,12 @@ export function MusicMineWebsiteApp() {
                 onLogout={() => {
                   setCurrentUser(null);
                   notify('Signed out');
+                }}
+                onPlayTrack={handlePlayTrack}
+                onToggleLike={handleToggleLike}
+                onClearHistory={() => {
+                  setHistory([]);
+                  notify('Cleared listening history');
                 }}
                 onNavigate={setRoute}
                 onNotify={notify}
@@ -2170,7 +2122,7 @@ export function MusicMineWebsiteApp() {
       {/* Compact Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Mobile bottom navigation"
-        className="md:hidden h-14 bg-black/80 backdrop-blur-xl border-t border-neutral-800/50 px-2 pb-1 flex items-center justify-around shrink-0 z-30 relative"
+        className="md:hidden h-14 bg-black/80 backdrop-blur-xl border-t border-neutral-800/50 px-2 pb-1 flex items-center justify-around shrink-0 z-30 sticky bottom-0"
       >
         {(
           [
