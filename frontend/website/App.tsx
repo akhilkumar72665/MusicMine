@@ -856,7 +856,7 @@ export function MusicMineWebsiteApp() {
               <span className="w-[3px] h-4.5 bg-white rounded-full" />
               <span className="w-[3px] h-2.5 bg-white rounded-full" />
             </div>
-            <span className="text-xl font-display font-black tracking-tight text-white group-hover:opacity-90 transition-opacity">
+            <span className="hidden sm:inline text-xl font-display font-black tracking-tight text-white group-hover:opacity-90 transition-opacity">
               Music<span className="text-[#FF0000]">Mine</span>
             </span>
           </button>
@@ -875,7 +875,7 @@ export function MusicMineWebsiteApp() {
             }}
             className="relative w-full"
           >
-            <Search className="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-5 h-5 text-neutral-300 absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="search"
               value={headerSearchQuery}
@@ -886,10 +886,10 @@ export function MusicMineWebsiteApp() {
               onFocus={() => setHeaderSearchFocused(true)}
               placeholder="Search songs, artists..."
               aria-label="Search music catalog"
-              className="w-full pl-11 pr-10 py-2.5 rounded-full bg-[#121212] hover:bg-[#171717] focus:bg-black border border-neutral-800/90 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-xs sm:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
+              className="w-full pl-11 sm:pl-12 pr-10 py-2.5 rounded-full bg-[#121212] hover:bg-[#171717] focus:bg-black border border-neutral-800/90 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-xs sm:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
             />
             {isSearchingHeader ? (
-              <Loader2 className="w-4 h-4 text-[#FF0000] animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
+              <Loader2 className="w-5 h-5 text-[#FF0000] animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
             ) : headerSearchQuery ? (
               <button
                 type="button"
@@ -900,7 +900,7 @@ export function MusicMineWebsiteApp() {
                 aria-label="Clear search"
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white cursor-pointer"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             ) : null}
           </form>
@@ -945,8 +945,8 @@ export function MusicMineWebsiteApp() {
                       >
                         <div
                           className={`p-2 rounded-xl flex items-center justify-between gap-3 transition-colors ${isCurrent
-                              ? 'bg-[#830000]/30 border border-[#FF0000]/40'
-                              : 'hover:bg-neutral-900 border border-transparent'
+                            ? 'bg-[#830000]/30 border border-[#FF0000]/40'
+                            : 'hover:bg-neutral-900 border border-transparent'
                             }`}
                         >
                           <button
@@ -1309,7 +1309,7 @@ export function MusicMineWebsiteApp() {
               }}
               className="flex-1 relative flex items-center"
             >
-              <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 pointer-events-none" />
+              <Search className="w-5 h-5 text-neutral-300 absolute left-3.5 pointer-events-none" />
               <input
                 type="search"
                 autoFocus
@@ -1320,10 +1320,10 @@ export function MusicMineWebsiteApp() {
                 }}
                 placeholder="Search songs, artists, soundtracks..."
                 aria-label="Search music catalog"
-                className="w-full pl-10 pr-9 py-2.5 rounded-full bg-neutral-900 border border-neutral-800 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-sm text-white placeholder-neutral-400"
+                className="w-full pl-11 pr-9 py-2.5 rounded-full bg-neutral-900 border border-neutral-800 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-sm text-white placeholder-neutral-400"
               />
               {isSearchingHeader ? (
-                <Loader2 className="w-4 h-4 text-[#FF0000] animate-spin absolute right-3" />
+                <Loader2 className="w-5 h-5 text-[#FF0000] animate-spin absolute right-3" />
               ) : headerSearchQuery ? (
                 <button
                   type="button"
@@ -1334,7 +1334,7 @@ export function MusicMineWebsiteApp() {
                   aria-label="Clear search"
                   className="absolute right-3 text-neutral-400 hover:text-white cursor-pointer p-1"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               ) : null}
             </form>
@@ -1385,11 +1385,10 @@ export function MusicMineWebsiteApp() {
                       return (
                         <div
                           key={`mob-srch-${track.id}`}
-                          className={`p-2.5 rounded-xl flex items-center justify-between gap-3 transition-colors ${
-                            isCurrent
+                          className={`p-2.5 rounded-xl flex items-center justify-between gap-3 transition-colors ${isCurrent
                               ? 'bg-[#830000]/30 border border-[#FF0000]/40'
                               : 'bg-neutral-950/80 hover:bg-neutral-900 border border-neutral-800/70'
-                          }`}
+                            }`}
                         >
                           <button
                             type="button"
@@ -1681,8 +1680,8 @@ export function MusicMineWebsiteApp() {
                 type="button"
                 onClick={() => setRoute('/')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/'
-                    ? 'bg-[#BC0202] text-white'
-                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  ? 'bg-[#BC0202] text-white'
+                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 <Home className="w-4 h-4 shrink-0" />
@@ -1692,8 +1691,8 @@ export function MusicMineWebsiteApp() {
                 type="button"
                 onClick={() => setRoute('/search')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/search'
-                    ? 'bg-[#BC0202] text-white'
-                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  ? 'bg-[#BC0202] text-white'
+                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 <Search className="w-4 h-4 shrink-0" />
@@ -1723,8 +1722,8 @@ export function MusicMineWebsiteApp() {
                     type="button"
                     onClick={() => setRoute(item.path)}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${active
-                        ? 'bg-[#BC0202] text-white'
-                        : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                      ? 'bg-[#BC0202] text-white'
+                      : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                       }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -1747,8 +1746,8 @@ export function MusicMineWebsiteApp() {
                     type="button"
                     onClick={() => setRoute(plPath)}
                     className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${active
-                        ? 'bg-[#830000]/40 text-[#FF0000] font-semibold'
-                        : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
+                      ? 'bg-[#830000]/40 text-[#FF0000] font-semibold'
+                      : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
                       }`}
                   >
                     <FolderHeart className="w-3.5 h-3.5 shrink-0 text-[#BC0202]" />
@@ -1766,8 +1765,8 @@ export function MusicMineWebsiteApp() {
                 type="button"
                 onClick={() => setRoute('/profile')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/profile'
-                    ? 'bg-[#BC0202] text-white'
-                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  ? 'bg-[#BC0202] text-white'
+                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 <User className="w-4 h-4 shrink-0" />
@@ -1777,8 +1776,8 @@ export function MusicMineWebsiteApp() {
                 type="button"
                 onClick={() => setRoute('/settings')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/settings'
-                    ? 'bg-[#BC0202] text-white'
-                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  ? 'bg-[#BC0202] text-white'
+                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 <Settings className="w-4 h-4 shrink-0" />
@@ -1788,8 +1787,8 @@ export function MusicMineWebsiteApp() {
                 type="button"
                 onClick={() => setRoute('/admin')}
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route.startsWith('/admin')
-                    ? 'bg-[#BC0202] text-white'
-                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                  ? 'bg-[#BC0202] text-white'
+                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
                   }`}
               >
                 <Shield className="w-4 h-4 shrink-0 text-[#FF0000]" />
@@ -2202,11 +2201,11 @@ export function MusicMineWebsiteApp() {
             >
               <div
                 className={`relative flex items-center justify-center p-1 rounded-full transition-all ${isActive
-                    ? 'bg-[#FF0000]/10 shadow-[inset_0_0_8px_rgba(255,0,0,0.45)] ring-1 ring-[#FF0000]/30'
-                    : ''
+                  ? 'bg-[#FF0000]/10 shadow-[inset_0_0_8px_rgba(255,0,0,0.45)] ring-1 ring-[#FF0000]/30'
+                  : ''
                   }`}
               >
-                <Icon className={`w-4 h-4 transition-transform ${isActive ? 'scale-105' : ''}`} />
+                <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-105' : ''}`} />
               </div>
               <span>{tab.label}</span>
             </button>
@@ -2236,8 +2235,8 @@ export function MusicMineWebsiteApp() {
             className="h-full bg-gradient-to-r from-[#BC0202] via-[#FF0000] to-[#FF3B3B] shadow-[0_0_8px_rgba(255,0,0,0.75)] transition-all duration-150 ease-out"
             style={{
               width: `${engineState.duration > 0
-                  ? Math.min(100, Math.max(0, (engineState.currentTime / engineState.duration) * 100))
-                  : 0
+                ? Math.min(100, Math.max(0, (engineState.currentTime / engineState.duration) * 100))
+                : 0
                 }%`,
             }}
           />
