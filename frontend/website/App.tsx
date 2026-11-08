@@ -129,7 +129,23 @@ export function MusicMineWebsiteApp() {
   );
 
   const [users, setUsers] = useState<UserAccount[]>(INITIAL_USERS);
-  const [currentUser, setCurrentUser] = useState<UserAccount | null>(INITIAL_USERS[0]);
+  const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
+    try {
+      const saved = localStorage.getItem('musicmine_current_user');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return null; // Guest mode by default
+  });
+
+  useEffect(() => {
+    try {
+      if (currentUser) {
+        localStorage.setItem('musicmine_current_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('musicmine_current_user');
+      }
+    } catch {}
+  }, [currentUser]);
   const [likedTrackIds, setLikedTrackIds] = useState<string[]>(() =>
     loadStoredJson<string[]>(STORAGE_KEYS.LIKED, [
       'trk-ri1Ar5nEq4s',
@@ -1122,8 +1138,8 @@ export function MusicMineWebsiteApp() {
                           setTrendSourceFilter(chip.id);
                         }}
                         className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all whitespace-nowrap cursor-pointer ${trendSourceFilter === chip.id
-                            ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
-                            : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                          ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+                          : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
                           }`}
                       >
                         {chip.label}
@@ -1593,8 +1609,8 @@ export function MusicMineWebsiteApp() {
                           setTrendSourceFilter(chip.id);
                         }}
                         className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${trendSourceFilter === chip.id
-                            ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
-                            : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                          ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+                          : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
                           }`}
                       >
                         {chip.label}
@@ -2053,7 +2069,11 @@ export function MusicMineWebsiteApp() {
                   }}
                   onLogout={() => {
                     setCurrentUser(null);
-                    notify('Signed out');
+                    try {
+                      localStorage.removeItem('musicmine_current_user');
+                    } catch {}
+                    notify('Signed out successfully');
+                    setRoute('/login');
                   }}
                   onPlayTrack={handlePlayTrack}
                   onToggleLike={handleToggleLike}
@@ -2071,12 +2091,13 @@ export function MusicMineWebsiteApp() {
                 mode={route === '/login' ? 'login' : 'signup'}
                 currentUser={currentUser}
                 onLoginEmail={(email, displayName, role: UserRole) => {
-                  const userObj: UserAccount = {
+                  const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+                  const userObj: UserAccount = existing || {
                     id: `usr-${Date.now()}`,
                     email,
                     displayName,
                     username: email.split('@')[0] || 'listener',
-                    bio: 'MusicMine listener',
+                    bio: 'Music enthusiast on MusicMine',
                     role,
                     authProvider: 'email',
                     emailVerified: true,
@@ -2086,17 +2107,51 @@ export function MusicMineWebsiteApp() {
                     avatarUrl: getEmailAvatarUrl(email, displayName),
                     createdAt: new Date().toISOString(),
                   };
+                  if (!existing) {
+                    setUsers((prev) => [...prev, userObj]);
+                  }
                   setCurrentUser(userObj);
-                  notify(`Welcome, ${displayName}`);
-                  setRoute(role === 'super_admin' ? '/admin' : '/');
+                  notify(`Welcome, ${userObj.displayName} (${userObj.role === 'super_admin' ? 'Super Admin' : 'Listener'})`);
+                  setRoute(userObj.role === 'super_admin' ? '/admin' : '/');
                 }}
-                onLoginGoogle={() => {
-                  setCurrentUser(INITIAL_USERS[0]);
-                  notify('Signed in with Google');
+                onLoginGoogle={(googleEmail, googleName) => {
+                  const email = googleEmail?.trim() || 'listener.music@gmail.com';
+                  const displayName = googleName?.trim() || email.split('@')[0] || 'Google Listener';
+                  const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+                  const userObj: UserAccount = existing || {
+                    id: `usr-g-${Date.now()}`,
+                    email,
+                    displayName,
+                    username: email.split('@')[0] || 'listener',
+                    bio: 'Music enthusiast on MusicMine',
+                    role: 'listener',
+                    authProvider: 'google',
+                    emailVerified: true,
+                    status: 'active',
+                    privateHistory: false,
+                    publicProfile: true,
+                    avatarUrl: getEmailAvatarUrl(email, displayName),
+                    createdAt: new Date().toISOString(),
+                  };
+                  if (!existing) {
+                    setUsers((prev) => [...prev, userObj]);
+                  }
+                  setCurrentUser(userObj);
+                  notify(`Signed in as ${userObj.displayName} (Listener)`);
                   setRoute('/');
+                }}
+                onLoginDemo={(demoUser) => {
+                  setCurrentUser(demoUser);
+                  notify(
+                    `Signed in as ${demoUser.displayName} (${
+                      demoUser.role === 'super_admin' ? 'Super Admin' : 'Listener'
+                    })`
+                  );
+                  setRoute(demoUser.role === 'super_admin' ? '/admin' : '/');
                 }}
                 onContinueGuest={() => {
                   setCurrentUser(null);
+                  notify('Browsing as Guest');
                   setRoute('/');
                 }}
                 onNavigate={setRoute}

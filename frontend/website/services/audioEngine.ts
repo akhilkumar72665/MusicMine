@@ -294,7 +294,7 @@ class MusicMineAudioEngine {
       }
 
       if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume().catch(() => {});
+        this.audioCtx.resume().catch(() => { });
       }
 
       if (!this.mediaSourceConnected && this.audioCtx) {
@@ -322,8 +322,8 @@ class MusicMineAudioEngine {
             idx === 0
               ? 'lowshelf'
               : idx === this.eqBands.length - 1
-              ? 'highshelf'
-              : 'peaking';
+                ? 'highshelf'
+                : 'peaking';
           filter.frequency.value = band.frequency;
           filter.Q.value = 1.1;
           filter.gain.value = this.eqEnabled ? band.gainDb : 0;
