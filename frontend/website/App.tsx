@@ -170,6 +170,8 @@ export function MusicMineWebsiteApp() {
   const [isSearchingHeader, setIsSearchingHeader] = useState<boolean>(false);
   const [headerSearchFocused, setHeaderSearchFocused] = useState<boolean>(false);
   const headerSearchRef = React.useRef<HTMLDivElement>(null);
+  const mobileSearchRef = React.useRef<HTMLDivElement>(null);
+  const [playerExpanded, setPlayerExpanded] = useState<boolean>(false);
 
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
@@ -249,19 +251,19 @@ export function MusicMineWebsiteApp() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        headerSearchRef.current &&
-        !headerSearchRef.current.contains(event.target as Node)
-      ) {
-        setHeaderSearchFocused(false);
-      }
+      const target = event.target as Node;
+      if (headerSearchRef.current?.contains(target)) return;
+      if (mobileSearchRef.current?.contains(target)) return;
+      setHeaderSearchFocused(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
-    setHeaderSearchFocused(false);
+    if (route !== '/search') {
+      setHeaderSearchFocused(false);
+    }
   }, [route]);
 
   // Real-time trending searches based on Google, YouTube & Spotify trends
@@ -1333,7 +1335,10 @@ export function MusicMineWebsiteApp() {
 
       {/* Mobile Full-Screen Live Search Experience (Full Live PC View on Mobile) */}
       {headerSearchFocused && (
-        <div className="md:hidden fixed inset-0 z-[100] bg-black flex flex-col h-full w-full overflow-hidden animate-in fade-in duration-150">
+        <div
+          ref={mobileSearchRef}
+          className="md:hidden fixed inset-0 z-[100] bg-black flex flex-col h-full w-full overflow-hidden animate-in fade-in duration-150"
+        >
           {/* Top Search Bar Header */}
           <div className="h-16 px-3 bg-[#0A0A0A] border-b border-neutral-800/80 flex items-center gap-2 shrink-0">
             <button
@@ -1443,8 +1448,10 @@ export function MusicMineWebsiteApp() {
                               if (headerSearchQuery.trim()) {
                                 saveRecentSearch(headerSearchQuery);
                               }
+                              setRoute('/search');
                               handlePlayTrack(track, headerSearchResults);
                               setHeaderSearchFocused(false);
+                              setPlayerExpanded(true);
                             }}
                             className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer"
                           >
@@ -1471,8 +1478,10 @@ export function MusicMineWebsiteApp() {
                               if (headerSearchQuery.trim()) {
                                 saveRecentSearch(headerSearchQuery);
                               }
+                              setRoute('/search');
                               handlePlayTrack(track, headerSearchResults);
                               setHeaderSearchFocused(false);
+                              setPlayerExpanded(true);
                             }}
                             aria-label={`Play ${track.cleanTitle}`}
                             className="w-9 h-9 rounded-full bg-[#BC0202] hover:bg-[#FF0000] text-white flex items-center justify-center shrink-0 shadow transition-colors cursor-pointer"
@@ -1719,8 +1728,10 @@ export function MusicMineWebsiteApp() {
                               <button
                                 type="button"
                                 onClick={() => {
+                                  setRoute('/search');
                                   handlePlayTrack(artistTrack, tracks);
                                   setHeaderSearchFocused(false);
+                                  setPlayerExpanded(true);
                                 }}
                                 aria-label={`Play top song by ${artist.name}`}
                                 className="w-8 h-8 rounded-full bg-[#BC0202] hover:bg-[#FF0000] text-white flex items-center justify-center shadow transition-colors cursor-pointer"
@@ -2200,6 +2211,8 @@ export function MusicMineWebsiteApp() {
           setSleepTimerMinutes(mins);
           notify(mins ? `Sleep timer set for ${mins} minutes` : 'Sleep timer off');
         }}
+        isExpanded={playerExpanded}
+        onToggleExpand={setPlayerExpanded}
         onNavigate={setRoute}
       />
 
@@ -2220,7 +2233,7 @@ export function MusicMineWebsiteApp() {
           const Icon = tab.icon;
           const isActive =
             tab.path === '/search'
-              ? headerSearchFocused
+              ? headerSearchFocused || route === '/search'
               : tab.path === '/'
                 ? route === '/' && !headerSearchFocused
                 : (route === tab.path || route.startsWith(`${tab.path}/`)) && !headerSearchFocused;
@@ -2230,6 +2243,7 @@ export function MusicMineWebsiteApp() {
               type="button"
               onClick={() => {
                 if (tab.path === '/search') {
+                  setRoute('/search');
                   setHeaderSearchFocused(true);
                   return;
                 }

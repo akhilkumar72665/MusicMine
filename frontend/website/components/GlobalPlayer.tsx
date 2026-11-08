@@ -284,6 +284,8 @@ interface GlobalPlayerProps {
   repeatMode: RepeatMode;
   likedTrackIds: string[];
   sleepTimerMinutes: number | null;
+  isExpanded?: boolean;
+  onToggleExpand?: (expanded: boolean) => void;
   onTogglePlay: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -313,6 +315,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
   repeatMode,
   likedTrackIds,
   sleepTimerMinutes,
+  isExpanded,
+  onToggleExpand,
   onTogglePlay,
   onPrev,
   onNext,
@@ -331,7 +335,13 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
   onSetSleepTimer,
   onNavigate,
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const expanded = isExpanded !== undefined ? isExpanded : internalExpanded;
+  const setExpanded = (val: boolean | ((prev: boolean) => boolean)) => {
+    const nextVal = typeof val === 'function' ? val(expanded) : val;
+    setInternalExpanded(nextVal);
+    onToggleExpand?.(nextVal);
+  };
   const [queueOpen, setQueueOpen] = useState(false);
   const [lyricsOn, setLyricsOn] = useState<boolean>(false);
   const [remoteLyrics, setRemoteLyrics] = useState<LyricLine[] | null>(null);
@@ -1768,7 +1778,13 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/track/${currentTrack.id}`)}
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+                      setExpanded(true);
+                    } else {
+                      onNavigate(`/track/${currentTrack.id}`);
+                    }
+                  }}
                   className="text-sm font-medium text-white hover:text-[#FF0000] truncate block text-left transition-colors cursor-pointer"
                 >
                   {currentTrack.cleanTitle}
@@ -1780,7 +1796,13 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               <div className="flex items-center gap-1.5 text-xs text-neutral-400 truncate">
                 <button
                   type="button"
-                  onClick={() => onNavigate(`/artist/${currentTrack.artistId}`)}
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+                      setExpanded(true);
+                    } else {
+                      onNavigate(`/artist/${currentTrack.artistId}`);
+                    }
+                  }}
                   className="hover:text-white truncate cursor-pointer"
                 >
                   {currentTrack.artistName}

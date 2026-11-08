@@ -57,6 +57,13 @@ async function startServer() {
   app.use((_req, res, next) => {
     const reqId = crypto.randomUUID();
     res.setHeader('X-Request-Id', reqId);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    if (_req.method === 'OPTIONS') {
+      res.sendStatus(204);
+      return;
+    }
     next();
   });
 
@@ -123,6 +130,8 @@ async function startServer() {
 
     if (targetStreamUrl) {
       // Direct CDN 302 redirect: zero server buffering overhead, instant byte-range audio playback
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
       res.redirect(302, targetStreamUrl);
       return;
     }

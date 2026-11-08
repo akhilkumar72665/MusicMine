@@ -256,6 +256,23 @@ class MusicMineAudioEngine {
     });
 
     el.addEventListener('error', () => {
+      // Fallback: If crossOrigin causes a streaming block on mobile browsers, retry directly without crossOrigin restriction
+      if (this.audio && this.audio.crossOrigin) {
+        console.warn('[AudioEngine] CrossOrigin playback error, retrying directly without crossOrigin restriction...');
+        const currentSrc = this.audio.src;
+        this.audio.removeAttribute('crossOrigin');
+        this.audio.crossOrigin = null;
+        this.audio.src = currentSrc;
+        this.audio.load();
+        this.audio.play().catch((err) => {
+          console.warn('[AudioEngine] Direct playback retry also failed:', err);
+          this.isPlaying = false;
+          this.isBuffering = false;
+          this.statusMessage = 'Unable to stream this track right now.';
+          this.emit();
+        });
+        return;
+      }
       this.isPlaying = false;
       this.isBuffering = false;
       this.statusMessage = 'Unable to stream this track right now.';
@@ -698,11 +715,29 @@ class MusicMineAudioEngine {
         this.isBuffering = true;
         this.ensureWebAudioGraph();
         this.emit();
-        this.audio.play().catch(() => {
-          this.isPlaying = false;
-          this.isBuffering = false;
-          this.emit();
-        });
+        const playPromise = this.audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn('[AudioEngine] Play rejected:', err);
+            if (this.audio && this.audio.crossOrigin) {
+              console.warn('[AudioEngine] Retrying with crossOrigin removed...');
+              const currentSrc = this.audio.src;
+              this.audio.removeAttribute('crossOrigin');
+              this.audio.crossOrigin = null;
+              this.audio.src = currentSrc;
+              this.audio.load();
+              this.audio.play().catch(() => {
+                this.isPlaying = false;
+                this.isBuffering = false;
+                this.emit();
+              });
+              return;
+            }
+            this.isPlaying = false;
+            this.isBuffering = false;
+            this.emit();
+          });
+        }
       } else {
         this.isPlaying = false;
         this.isBuffering = false;
@@ -725,11 +760,29 @@ class MusicMineAudioEngine {
     this.isBuffering = true;
     this.statusMessage = null;
     this.emit();
-    this.audio.play().catch(() => {
-      this.isPlaying = false;
-      this.isBuffering = false;
-      this.emit();
-    });
+    const playPromise = this.audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((err) => {
+        console.warn('[AudioEngine] Play rejected:', err);
+        if (this.audio && this.audio.crossOrigin) {
+          console.warn('[AudioEngine] Retrying play with crossOrigin removed...');
+          const currentSrc = this.audio.src;
+          this.audio.removeAttribute('crossOrigin');
+          this.audio.crossOrigin = null;
+          this.audio.src = currentSrc;
+          this.audio.load();
+          this.audio.play().catch(() => {
+            this.isPlaying = false;
+            this.isBuffering = false;
+            this.emit();
+          });
+          return;
+        }
+        this.isPlaying = false;
+        this.isBuffering = false;
+        this.emit();
+      });
+    }
   }
 
   public pause() {
