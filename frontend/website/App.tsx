@@ -1119,11 +1119,10 @@ export function MusicMineWebsiteApp() {
                           e.stopPropagation();
                           setTrendSourceFilter(chip.id);
                         }}
-                        className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                          trendSourceFilter === chip.id
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all whitespace-nowrap cursor-pointer ${trendSourceFilter === chip.id
                             ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
                             : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
-                        }`}
+                          }`}
                       >
                         {chip.label}
                       </button>
@@ -1584,11 +1583,10 @@ export function MusicMineWebsiteApp() {
                           e.stopPropagation();
                           setTrendSourceFilter(chip.id);
                         }}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                          trendSourceFilter === chip.id
+                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${trendSourceFilter === chip.id
                             ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
                             : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
-                        }`}
+                          }`}
                       >
                         {chip.label}
                       </button>
@@ -2224,8 +2222,8 @@ export function MusicMineWebsiteApp() {
             tab.path === '/search'
               ? headerSearchFocused
               : tab.path === '/'
-              ? route === '/' && !headerSearchFocused
-              : (route === tab.path || route.startsWith(`${tab.path}/`)) && !headerSearchFocused;
+                ? route === '/' && !headerSearchFocused
+                : (route === tab.path || route.startsWith(`${tab.path}/`)) && !headerSearchFocused;
           return (
             <button
               key={tab.path}
