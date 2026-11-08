@@ -215,6 +215,36 @@ export const LiveBeatsVisualizer: React.FC<{
   barCount?: number;
   compact?: boolean;
 }> = ({ isPlaying, barCount = 24, compact = false }) => {
+  if (compact) {
+    return (
+      <div
+        aria-label="Live audio beats"
+        className="flex items-end gap-0.5 h-3.5 px-1.5 shrink-0"
+      >
+        <span
+          className={`w-0.5 rounded-full bg-[#FF0000] ${
+            isPlaying ? 'h-full mm-beat-1' : 'h-1.5 opacity-30'
+          }`}
+        />
+        <span
+          className={`w-0.5 rounded-full bg-[#FF0000] ${
+            isPlaying ? 'h-full mm-beat-2' : 'h-2 opacity-30'
+          }`}
+        />
+        <span
+          className={`w-0.5 rounded-full bg-[#FF0000] ${
+            isPlaying ? 'h-full mm-beat-3' : 'h-1 opacity-30'
+          }`}
+        />
+        <span
+          className={`w-0.5 rounded-full bg-[#FF0000] ${
+            isPlaying ? 'h-full mm-beat-4' : 'h-2 opacity-30'
+          }`}
+        />
+      </div>
+    );
+  }
+
   const [bars, setBars] = useState<number[]>(() =>
     Array.from({ length: barCount }, () => 14)
   );
@@ -226,29 +256,9 @@ export const LiveBeatsVisualizer: React.FC<{
     }
     const interval = window.setInterval(() => {
       setBars([...audioEngine.getLiveFrequencyBars(barCount)]);
-    }, 50);
+    }, 75);
     return () => clearInterval(interval);
   }, [isPlaying, barCount]);
-
-  if (compact) {
-    return (
-      <div
-        aria-label="Live audio beats"
-        className="flex items-end gap-0.5 h-3.5 px-1.5"
-      >
-        {bars.slice(0, 5).map((h, i) => (
-          <span
-            key={i}
-            className="w-0.5 rounded-full bg-[#FF0000] mm-beat-bar-smooth"
-            style={{
-              height: `${isPlaying ? Math.max(22, h) : 20}%`,
-              opacity: isPlaying ? 0.9 : 0.35,
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
 
   return (
     <div
@@ -504,7 +514,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
           role="dialog"
           aria-modal="true"
           aria-label="Expanded Music Player"
-          className="fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-gradient-to-b from-[#180303] via-[#080101] to-black flex flex-col justify-between p-3 sm:p-5 lg:p-6 select-none"
+          className="fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-hidden overscroll-none touch-none bg-gradient-to-b from-[#180303] via-[#080101] to-black flex flex-col justify-between p-3 sm:p-5 lg:p-6 select-none"
         >
           {/* Top Bar: Left ChevronDown, Center NOW PLAYING, Right Queue Icon */}
           <div className="max-w-6xl w-full mx-auto flex items-center justify-between pb-1 shrink-0">

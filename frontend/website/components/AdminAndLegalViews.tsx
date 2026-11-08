@@ -67,7 +67,7 @@ export const AuthView: React.FC<AuthViewProps> = ({
       displayName.trim() || email.trim().split('@')[0] || 'Music Listener';
     const role: UserRole =
       email.toLowerCase().trim() === 'admin@musicmine.app' ||
-      email.toLowerCase().startsWith('admin@')
+        email.toLowerCase().startsWith('admin@')
         ? 'super_admin'
         : 'listener';
     onLoginEmail(email.trim(), inferredName, role);
@@ -91,22 +91,20 @@ export const AuthView: React.FC<AuthViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('/login')}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  mode === 'login'
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${mode === 'login'
                     ? 'bg-[#BC0202] text-white shadow'
                     : 'text-neutral-400 hover:text-white'
-                }`}
+                  }`}
               >
                 Sign In
               </button>
               <button
                 type="button"
                 onClick={() => onNavigate('/signup')}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                  mode === 'signup'
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${mode === 'signup'
                     ? 'bg-[#BC0202] text-white shadow'
                     : 'text-neutral-400 hover:text-white'
-                }`}
+                  }`}
               >
                 Create Account
               </button>
@@ -576,11 +574,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               key={tab.path}
               type="button"
               onClick={() => onNavigate(tab.path)}
-              className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                isActive
+              className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${isActive
                   ? 'bg-[#BC0202] text-white'
                   : 'bg-[#0A0A0A] text-neutral-400 hover:text-white border border-neutral-800'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -663,11 +660,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => onToggleTrackVisibility(t.id)}
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
-                          t.visibleInCatalog
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${t.visibleInCatalog
                             ? 'bg-neutral-900 hover:bg-[#830000]/40 text-white border border-neutral-700'
                             : 'bg-[#830000]/30 hover:bg-[#BC0202] text-[#FF0000] hover:text-white border border-[#BC0202]/50'
-                        }`}
+                          }`}
                       >
                         {t.visibleInCatalog ? (
                           <>
@@ -738,11 +734,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     <button
                       type="button"
                       onClick={() => onToggleSectionEnabled(sec.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer ${
-                        sec.enabled
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer ${sec.enabled
                           ? 'bg-[#BC0202] text-white'
                           : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
-                      }`}
+                        }`}
                     >
                       {sec.enabled ? 'Enabled' : 'Disabled'}
                     </button>

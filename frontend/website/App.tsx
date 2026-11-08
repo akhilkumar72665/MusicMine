@@ -133,7 +133,7 @@ export function MusicMineWebsiteApp() {
     try {
       const saved = localStorage.getItem('musicmine_current_user');
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch { }
     return null; // Guest mode by default
   });
 
@@ -144,7 +144,7 @@ export function MusicMineWebsiteApp() {
       } else {
         localStorage.removeItem('musicmine_current_user');
       }
-    } catch {}
+    } catch { }
   }, [currentUser]);
   const [likedTrackIds, setLikedTrackIds] = useState<string[]>(() =>
     loadStoredJson<string[]>(STORAGE_KEYS.LIKED, [
@@ -1409,7 +1409,7 @@ export function MusicMineWebsiteApp() {
           </div>
 
           {/* Scrollable Mobile Body */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 pb-28">
+          <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y px-4 py-4 space-y-6 pb-28">
             {/* If user is typing: Live Quick Results */}
             {headerSearchQuery.trim().length > 0 ? (
               <div className="space-y-3">
@@ -1896,7 +1896,7 @@ export function MusicMineWebsiteApp() {
         </aside>
 
         {/* Main Scrollable Viewport */}
-        <main className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 py-5 space-y-6 overscroll-contain">
+        <main className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-4 sm:px-6 lg:px-8 py-5 space-y-6">
 
           {/* Toast Notification Banner */}
           {toastMessage && (
@@ -2071,7 +2071,7 @@ export function MusicMineWebsiteApp() {
                     setCurrentUser(null);
                     try {
                       localStorage.removeItem('musicmine_current_user');
-                    } catch {}
+                    } catch { }
                     notify('Signed out successfully');
                     setRoute('/login');
                   }}
@@ -2143,8 +2143,7 @@ export function MusicMineWebsiteApp() {
                 onLoginDemo={(demoUser) => {
                   setCurrentUser(demoUser);
                   notify(
-                    `Signed in as ${demoUser.displayName} (${
-                      demoUser.role === 'super_admin' ? 'Super Admin' : 'Listener'
+                    `Signed in as ${demoUser.displayName} (${demoUser.role === 'super_admin' ? 'Super Admin' : 'Listener'
                     })`
                   );
                   setRoute(demoUser.role === 'super_admin' ? '/admin' : '/');

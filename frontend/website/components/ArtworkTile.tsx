@@ -72,6 +72,8 @@ export const ArtworkTile: React.FC<ArtworkTileProps> = ({
         <img
           src={thumbnailUrl}
           alt={subtitle ? `${title} by ${subtitle}` : title}
+          loading="lazy"
+          decoding="async"
           referrerPolicy="no-referrer"
           onError={() => setImgError(true)}
           className="relative z-10 w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
