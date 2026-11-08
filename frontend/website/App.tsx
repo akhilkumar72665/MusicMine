@@ -167,6 +167,53 @@ export function MusicMineWebsiteApp() {
   const [headerSearchFocused, setHeaderSearchFocused] = useState<boolean>(false);
   const headerSearchRef = React.useRef<HTMLDivElement>(null);
 
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('musicmine_recent_searches');
+      return saved ? JSON.parse(saved).slice(0, 5) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const saveRecentSearch = useCallback((rawTerm: string) => {
+    const term = rawTerm.trim();
+    if (!term) return;
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== term.toLowerCase());
+      const updated = [term, ...filtered].slice(0, 5);
+      try {
+        localStorage.setItem('musicmine_recent_searches', JSON.stringify(updated));
+      } catch {
+        // ignore storage errors
+      }
+      return updated;
+    });
+  }, []);
+
+  const removeRecentSearch = useCallback((termToRemove: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecentSearches((prev) => {
+      const updated = prev.filter((item) => item !== termToRemove);
+      try {
+        localStorage.setItem('musicmine_recent_searches', JSON.stringify(updated));
+      } catch {
+        // ignore storage errors
+      }
+      return updated;
+    });
+  }, []);
+
+  const clearRecentSearches = useCallback((e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem('musicmine_recent_searches');
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
   useEffect(() => {
     const trimmed = headerSearchQuery.trim();
     if (!trimmed) {
@@ -820,6 +867,9 @@ export function MusicMineWebsiteApp() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              if (headerSearchQuery.trim()) {
+                saveRecentSearch(headerSearchQuery);
+              }
               setHeaderSearchFocused(false);
               setRoute('/search');
             }}
@@ -867,6 +917,9 @@ export function MusicMineWebsiteApp() {
                 <button
                   type="button"
                   onClick={() => {
+                    if (headerSearchQuery.trim()) {
+                      saveRecentSearch(headerSearchQuery);
+                    }
                     setHeaderSearchFocused(false);
                     setRoute('/search');
                   }}
@@ -900,6 +953,9 @@ export function MusicMineWebsiteApp() {
                           <button
                             type="button"
                             onClick={() => {
+                              if (headerSearchQuery.trim()) {
+                                saveRecentSearch(headerSearchQuery);
+                              }
                               handlePlayTrack(track, headerSearchResults);
                               setHeaderSearchFocused(false);
                             }}
@@ -925,6 +981,9 @@ export function MusicMineWebsiteApp() {
                           <button
                             type="button"
                             onClick={() => {
+                              if (headerSearchQuery.trim()) {
+                                saveRecentSearch(headerSearchQuery);
+                              }
                               handlePlayTrack(track, headerSearchResults);
                               setHeaderSearchFocused(false);
                             }}
@@ -948,6 +1007,9 @@ export function MusicMineWebsiteApp() {
                 <button
                   type="button"
                   onClick={() => {
+                    if (headerSearchQuery.trim()) {
+                      saveRecentSearch(headerSearchQuery);
+                    }
                     setHeaderSearchFocused(false);
                     setRoute('/search');
                   }}
@@ -980,6 +1042,52 @@ export function MusicMineWebsiteApp() {
               {/* Scrollable Container */}
               <div className="overflow-y-auto p-3 space-y-4 max-h-[70vh]">
                 
+                {/* 0. Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <History className="w-3.5 h-3.5 text-[#FF0000]" />
+                        Recent Searches
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearRecentSearches}
+                        className="text-[10px] text-neutral-500 hover:text-[#FF0000] transition-colors cursor-pointer"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {recentSearches.map((term) => (
+                        <div
+                          key={`recent-${term}`}
+                          className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800/80 hover:border-[#BC0202]/60 text-xs text-neutral-300 hover:text-white transition-all cursor-pointer shadow-sm"
+                          onClick={() => {
+                            setHeaderSearchQuery(term);
+                            saveRecentSearch(term);
+                            setHeaderSearchFocused(true);
+                          }}
+                        >
+                          <History className="w-3 h-3 text-neutral-500 group-hover:text-[#FF0000] shrink-0" />
+                          <span className="font-medium truncate max-w-[150px] sm:max-w-[220px]">
+                            {term}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => removeRecentSearch(term, e)}
+                            aria-label={`Remove ${term} from recent searches`}
+                            className="text-neutral-500 hover:text-white p-0.5 ml-0.5 rounded transition-colors cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* 1. Trending Searches */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -997,6 +1105,7 @@ export function MusicMineWebsiteApp() {
                         type="button"
                         onClick={() => {
                           setHeaderSearchQuery(item.term);
+                          saveRecentSearch(item.term);
                           setHeaderSearchFocused(true);
                         }}
                         className="p-2.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800/80 hover:border-[#BC0202]/60 text-left transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
@@ -1099,6 +1208,7 @@ export function MusicMineWebsiteApp() {
                               type="button"
                               onClick={() => {
                                 setHeaderSearchQuery(artist.name);
+                                saveRecentSearch(artist.name);
                                 setHeaderSearchFocused(true);
                               }}
                               className="px-2.5 py-1 rounded-lg text-[11px] text-neutral-400 hover:text-white bg-neutral-800 hover:bg-neutral-700 transition-colors cursor-pointer"
@@ -1688,7 +1798,7 @@ export function MusicMineWebsiteApp() {
       {/* Compact Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Mobile bottom navigation"
-        className="md:hidden h-14 bg-black border-t border-neutral-800 px-2 pb-1 flex items-center justify-around shrink-0 z-30 relative"
+        className="md:hidden h-14 bg-black/80 backdrop-blur-xl border-t border-neutral-800/50 px-2 pb-1 flex items-center justify-around shrink-0 z-30 relative"
       >
         {(
           [
@@ -1713,7 +1823,15 @@ export function MusicMineWebsiteApp() {
                 isActive ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <div
+                className={`relative flex items-center justify-center p-1 rounded-full transition-all ${
+                  isActive
+                    ? 'bg-[#FF0000]/10 shadow-[inset_0_0_8px_rgba(255,0,0,0.45)] ring-1 ring-[#FF0000]/30'
+                    : ''
+                }`}
+              >
+                <Icon className={`w-4 h-4 transition-transform ${isActive ? 'scale-105' : ''}`} />
+              </div>
               <span>{tab.label}</span>
             </button>
           );
