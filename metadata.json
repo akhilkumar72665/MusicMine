@@ -1,0 +1,6 @@
+{
+  "name": "MusicMine",
+  "description": "Multi-platform music streaming and discovery web application featuring a custom AMOLED Red & Black design system, persistent audio engine, playlist management, and admin curation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --mm-bg: #000000;
+    --mm-surface: #0A0A0A;
+    --mm-surface-elevated: #121212;
+    --mm-border: #1F1F1F;
+    --mm-dark-red: #830000;
+    --mm-primary-red: #BC0202;
+    --mm-bright-red: #FF0000;
+    --mm-text: #FFFFFF;
+    --mm-text-muted: #A1A1AA;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .font-mono, .tabular-nums {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Smooth Spotify-grade card & surface transitions */
+.mm-smooth-card {
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.mm-smooth-card:hover {
+  transform: translate3d(0, -2px, 0);
+}
+
+.mm-spotify-tile {
+  transition: background-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 160ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mm-spotify-tile:hover {
+  transform: translate3d(0, -1px, 0);
+}
+
+.mm-beat-bar-smooth {
+  transition: height 140ms cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 180ms ease;
+  will-change: height;
+}
+
+@keyframes mm-float-thumb {
+  0%, 100% {
+    transform: translate3d(0, 0px, 0);
+    box-shadow: 0 20px 45px -6px rgba(188, 2, 2, 0.28), 0 30px 60px -10px rgba(0, 0, 0, 0.95);
+  }
+  50% {
+    transform: translate3d(0, -12px, 0);
+    box-shadow: 0 32px 65px -4px rgba(255, 0, 0, 0.45), 0 38px 80px -10px rgba(0, 0, 0, 0.98);
+  }
+}
+
+.mm-floating-artwork {
+  animation: mm-float-thumb 3.8s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+.mm-float-thumb {
+  transition: transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+.mm-float-thumb:hover {
+  transform: translate3d(0, -5px, 0) scale(1.02);
+  box-shadow: 0 14px 28px -6px rgba(188, 2, 2, 0.4), 0 8px 16px -6px rgba(0, 0, 0, 0.85);
+}
+
+.mm-float-playing {
+  animation: mm-float-thumb 3.4s ease-in-out infinite;
+  box-shadow: 0 16px 32px -6px rgba(255, 0, 0, 0.45), 0 10px 20px -6px rgba(0, 0, 0, 0.9);
+}
+
+/* Side Window Slide-In Animation */
+@keyframes mm-slide-in-right {
+  from {
+    transform: translate3d(100%, 0, 0);
+    opacity: 0.7;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+}
+
+.mm-side-window {
+  animation: mm-slide-in-right 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  background: rgba(10, 10, 10, 0.82) !important;
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+}
+
+/* Modern AMOLED Glass Aesthetics */
+.mm-glass-amoled {
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+}
+
+/* Synchronized Lyrics Smooth Active Line Animation */
+@keyframes mm-lyric-active-pop {
+  0% {
+    opacity: 0.5;
+    transform: translateY(3px) scale(0.97);
+  }
+  60% {
+    transform: translateY(-1px) scale(1.015);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.mm-lyric-line-active {
+  animation: mm-lyric-active-pop 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes trending-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-trending-slide {
+  display: flex;
+  width: max-content;
+  animation: trending-marquee 38s linear infinite;
+  will-change: transform;
+}
+
+.animate-trending-slide:hover {
+  animation-play-state: paused;
+}
+
+@keyframes mm-beat-bar-1 {
+  0%, 100% { transform: scaleY(0.22); }
+  25% { transform: scaleY(0.95); }
+  50% { transform: scaleY(0.45); }
+  75% { transform: scaleY(0.82); }
+}
+
+@keyframes mm-beat-bar-2 {
+  0%, 100% { transform: scaleY(0.65); }
+  20% { transform: scaleY(0.28); }
+  55% { transform: scaleY(1); }
+  80% { transform: scaleY(0.42); }
+}
+
+@keyframes mm-beat-bar-3 {
+  0%, 100% { transform: scaleY(0.35); }
+  30% { transform: scaleY(0.88); }
+  65% { transform: scaleY(0.25); }
+  85% { transform: scaleY(0.96); }
+}
+
+@keyframes mm-beat-bar-4 {
+  0%, 100% { transform: scaleY(0.78); }
+  35% { transform: scaleY(0.3); }
+  70% { transform: scaleY(0.92); }
+}
+
+.mm-beat-1 {
+  transform-origin: bottom;
+  animation: mm-beat-bar-1 0.68s ease-in-out infinite;
+}
+.mm-beat-2 {
+  transform-origin: bottom;
+  animation: mm-beat-bar-2 0.56s ease-in-out infinite;
+}
+.mm-beat-3 {
+  transform-origin: bottom;
+  animation: mm-beat-bar-3 0.74s ease-in-out infinite;
+}
+.mm-beat-4 {
+  transform-origin: bottom;
+  animation: mm-beat-bar-4 0.62s ease-in-out infinite;
+}
+
+/* Custom subtle scrollbars for dark/AMOLED surfaces */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #262626;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #830000;
+}
