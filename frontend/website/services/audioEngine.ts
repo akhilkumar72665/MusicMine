@@ -644,6 +644,10 @@ class MusicMineAudioEngine {
   }
 
   private buildStreamUrl(track: Track): string {
+    // If track already has a direct valid CDN stream URL (e.g. JioSaavn CDN), stream it directly with 0ms latency
+    if (track.streamUrl && /^https?:\/\//i.test(track.streamUrl)) {
+      return track.streamUrl;
+    }
     const params = new URLSearchParams();
     params.set('id', track.providerId);
     params.set(

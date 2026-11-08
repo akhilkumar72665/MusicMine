@@ -38,6 +38,7 @@ import {
   ViewStateMode,
 } from '../../shared/types/music';
 import {
+  getEmailAvatarUrl,
   INITIAL_ALBUMS,
   INITIAL_ARTISTS,
   INITIAL_AUDIT_LOGS,
@@ -862,8 +863,8 @@ export function MusicMineWebsiteApp() {
           </button>
         </div>
 
-        {/* Zone 2: Global Header Search Bar (Matching Reference Image) */}
-        <div ref={headerSearchRef} className="flex-1 max-w-xl mx-2 sm:mx-6 relative">
+        {/* Zone 2: Global Header Search Bar (Full remaining space) */}
+        <div ref={headerSearchRef} className="flex-1 w-full mx-2 sm:mx-4 relative">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -1262,21 +1263,31 @@ export function MusicMineWebsiteApp() {
         </div>
 
         {/* Zone 3: Primary Account Action */}
-        {/* Zone 3: Crisp White Pill Sign In Button Matching Reference Image */}
         <div className="flex items-center shrink-0">
           {currentUser ? (
             <button
               type="button"
               onClick={() => setRoute('/profile')}
-              className="px-5 py-2 text-xs font-bold text-black bg-white hover:bg-neutral-200 rounded-full transition-colors whitespace-nowrap shadow cursor-pointer"
+              title={`Signed in as ${currentUser.displayName || currentUser.email}`}
+              className="flex items-center gap-2 p-1 pl-1.5 pr-3 rounded-full bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 hover:border-[#BC0202]/60 transition-colors cursor-pointer group shrink-0"
             >
-              Sign in
+              <img
+                src={currentUser.avatarUrl || getEmailAvatarUrl(currentUser.email, currentUser.displayName)}
+                alt={currentUser.displayName}
+                className="w-7 h-7 rounded-full object-cover border border-[#FF0000]/60 group-hover:scale-105 transition-transform"
+                onError={(e) => {
+                  e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.displayName || currentUser.email)}&backgroundColor=bc0202,830000,000000&textColor=ffffff`;
+                }}
+              />
+              <span className="text-xs font-semibold text-white max-w-[85px] truncate hidden sm:inline">
+                {currentUser.displayName}
+              </span>
             </button>
           ) : (
             <button
               type="button"
               onClick={() => setRoute('/login')}
-              className="px-5 py-2 text-xs font-bold text-black bg-white hover:bg-neutral-200 rounded-full transition-colors whitespace-nowrap shadow cursor-pointer"
+              className="px-5 py-2 text-xs font-bold text-black bg-white hover:bg-neutral-200 rounded-full transition-colors whitespace-nowrap shadow cursor-pointer shrink-0"
             >
               Sign in
             </button>
@@ -1859,6 +1870,7 @@ export function MusicMineWebsiteApp() {
                 onToggleSaveAlbum={handleToggleSaveAlbum}
                 onToggleFollowArtist={handleToggleFollowArtist}
                 onNavigate={setRoute}
+                onTracksDiscovered={handleTracksDiscovered}
               />
             )}
 
@@ -1878,6 +1890,7 @@ export function MusicMineWebsiteApp() {
                 onToggleSaveAlbum={handleToggleSaveAlbum}
                 onToggleFollowArtist={handleToggleFollowArtist}
                 onNavigate={setRoute}
+                onTracksDiscovered={handleTracksDiscovered}
               />
             )}
 
@@ -1897,6 +1910,7 @@ export function MusicMineWebsiteApp() {
                 onToggleSaveAlbum={handleToggleSaveAlbum}
                 onToggleFollowArtist={handleToggleFollowArtist}
                 onNavigate={setRoute}
+                onTracksDiscovered={handleTracksDiscovered}
               />
             )}
 
@@ -1936,41 +1950,41 @@ export function MusicMineWebsiteApp() {
               route === '/library/liked' ||
               route === '/library/albums' ||
               route === '/library/history') && (
-              <ProfileSettingsStatsView
-                route={route}
-                currentUser={currentUser}
-                tracks={tracks}
-                albums={albums}
-                artists={artists}
-                likedTrackIds={likedTrackIds}
-                savedAlbumIds={savedAlbumIds}
-                history={history}
-                playlists={playlists}
-                themeMode={themeMode}
-                onSetThemeMode={(m) => {
-                  setThemeMode(m);
-                  notify(`Appearance changed to ${m.toUpperCase()}`);
-                }}
-                onUpdateProfile={(displayName, bio, privateHistory, publicProfile) => {
-                  setCurrentUser((prev) =>
-                    prev ? { ...prev, displayName, bio, privateHistory, publicProfile } : prev
-                  );
-                  notify('Profile saved');
-                }}
-                onLogout={() => {
-                  setCurrentUser(null);
-                  notify('Signed out');
-                }}
-                onPlayTrack={handlePlayTrack}
-                onToggleLike={handleToggleLike}
-                onClearHistory={() => {
-                  setHistory([]);
-                  notify('Cleared listening history');
-                }}
-                onNavigate={setRoute}
-                onNotify={notify}
-              />
-            )}
+                <ProfileSettingsStatsView
+                  route={route}
+                  currentUser={currentUser}
+                  tracks={tracks}
+                  albums={albums}
+                  artists={artists}
+                  likedTrackIds={likedTrackIds}
+                  savedAlbumIds={savedAlbumIds}
+                  history={history}
+                  playlists={playlists}
+                  themeMode={themeMode}
+                  onSetThemeMode={(m) => {
+                    setThemeMode(m);
+                    notify(`Appearance changed to ${m.toUpperCase()}`);
+                  }}
+                  onUpdateProfile={(displayName, bio, privateHistory, publicProfile) => {
+                    setCurrentUser((prev) =>
+                      prev ? { ...prev, displayName, bio, privateHistory, publicProfile } : prev
+                    );
+                    notify('Profile saved');
+                  }}
+                  onLogout={() => {
+                    setCurrentUser(null);
+                    notify('Signed out');
+                  }}
+                  onPlayTrack={handlePlayTrack}
+                  onToggleLike={handleToggleLike}
+                  onClearHistory={() => {
+                    setHistory([]);
+                    notify('Cleared listening history');
+                  }}
+                  onNavigate={setRoute}
+                  onNotify={notify}
+                />
+              )}
 
             {(route === '/login' || route === '/signup') && (
               <AuthView
@@ -1989,6 +2003,7 @@ export function MusicMineWebsiteApp() {
                     status: 'active',
                     privateHistory: true,
                     publicProfile: false,
+                    avatarUrl: getEmailAvatarUrl(email, displayName),
                     createdAt: new Date().toISOString(),
                   };
                   setCurrentUser(userObj);
@@ -2135,9 +2150,11 @@ export function MusicMineWebsiteApp() {
         ).map((tab) => {
           const Icon = tab.icon;
           const isActive =
-            tab.path === '/'
-              ? route === '/'
-              : route === tab.path || route.startsWith(`${tab.path}/`);
+            tab.path === '/search'
+              ? headerSearchFocused
+              : tab.path === '/'
+              ? route === '/' && !headerSearchFocused
+              : (route === tab.path || route.startsWith(`${tab.path}/`)) && !headerSearchFocused;
           return (
             <button
               key={tab.path}
@@ -2145,6 +2162,7 @@ export function MusicMineWebsiteApp() {
               onClick={() => {
                 if (tab.path === '/search') {
                   setHeaderSearchFocused(true);
+                  return;
                 }
                 setRoute(tab.path);
               }}

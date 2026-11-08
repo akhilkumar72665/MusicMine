@@ -488,6 +488,15 @@ export const INITIAL_LISTENING_HISTORY: ListeningEvent[] = [
   },
 ];
 
+export function getEmailAvatarUrl(email?: string, name?: string): string {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const seed = encodeURIComponent(name || (cleanEmail ? cleanEmail.split('@')[0] : 'Listener'));
+  if (!cleanEmail) {
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}&backgroundColor=bc0202,830000,000000&textColor=ffffff`;
+  }
+  return `https://unavatar.io/${encodeURIComponent(cleanEmail)}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${seed}&backgroundColor=bc0202,830000,000000&textColor=ffffff`;
+}
+
 export const INITIAL_USERS: UserAccount[] = [
   {
     id: 'usr-admin',
@@ -501,6 +510,7 @@ export const INITIAL_USERS: UserAccount[] = [
     status: 'active',
     privateHistory: true,
     publicProfile: false,
+    avatarUrl: getEmailAvatarUrl('admin@musicmine.app', 'Admin User'),
     createdAt: '2026-10-15T09:00:00Z',
   },
   {
@@ -515,6 +525,7 @@ export const INITIAL_USERS: UserAccount[] = [
     status: 'active',
     privateHistory: true,
     publicProfile: true,
+    avatarUrl: getEmailAvatarUrl('meera.nair@example.in', 'Meera Nair'),
     createdAt: '2026-10-21T11:30:00Z',
   },
 ];

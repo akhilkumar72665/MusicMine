@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowUp,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Clock,
   Download,
@@ -17,6 +18,7 @@ import {
   MoreHorizontal,
   Pause,
   Play,
+  Radio,
   Repeat,
   Repeat1,
   RotateCcw,
@@ -335,7 +337,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
   const [remoteLyrics, setRemoteLyrics] = useState<LyricLine[] | null>(null);
   const [lyricsLoading, setLyricsLoading] = useState<boolean>(false);
   const [activeModal, setActiveModal] = useState<
-    'none' | 'equalizer' | 'queue' | 'speed' | 'sleep' | 'loop' | 'more'
+    'none' | 'equalizer' | 'queue' | 'speed' | 'sleep' | 'loop' | 'more' | 'fullLyrics'
   >('none');
 
   useEffect(() => {
@@ -516,23 +518,11 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
             <div className="flex items-center gap-1.5 -mr-2">
               <button
                 type="button"
-                onClick={() => setActiveModal('equalizer')}
-                aria-label="Open Equalizer"
-                title="5-Band Equalizer & Audio Modes"
-                className={`p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer ${
-                  engineState.eqEnabled ? 'text-[#FF0000]' : 'text-neutral-300 hover:text-white'
-                }`}
-              >
-                <Sliders className="w-5 h-5" />
-              </button>
-              <button
-                type="button"
                 onClick={() => setActiveModal('queue')}
                 aria-label="Open Queue"
                 title={`Up Next Queue (${queue.length})`}
-                className={`p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer ${
-                  activeModal === 'queue' ? 'text-[#FF0000]' : 'text-neutral-300 hover:text-white'
-                }`}
+                className={`p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer ${activeModal === 'queue' ? 'text-[#FF0000]' : 'text-neutral-300 hover:text-white'
+                  }`}
               >
                 <ListMusic className="w-5 h-5" />
               </button>
@@ -544,13 +534,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
             {/* Left Column: Floating Large Artwork + Integrated Live Beats Visualizer + Synchronized Lyrics Underneath */}
             <div className="md:col-span-6 flex flex-col items-center justify-center">
               <div
-                className={`relative group w-full ${
-                  lyricsOn
-                    ? 'max-w-[340px] sm:max-w-[390px] lg:max-w-[430px]'
-                    : 'max-w-md sm:max-w-lg lg:max-w-[480px] xl:max-w-[520px]'
-                } aspect-square transition-all duration-300 ${
-                  engineState.isPlaying ? 'mm-floating-artwork' : 'shadow-[0_25px_60px_rgba(0,0,0,0.95)]'
-                }`}
+                className={`relative group w-full max-w-md sm:max-w-lg lg:max-w-[460px] xl:max-w-[500px] aspect-square transition-all duration-300 ${engineState.isPlaying ? 'mm-floating-artwork' : 'shadow-[0_25px_60px_rgba(0,0,0,0.95)]'
+                  }`}
               >
                 <img
                   src={currentTrack.thumbnailUrl}
@@ -571,80 +556,34 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 </div>
               </div>
 
-              {/* Integrated Live Beats Visualizer */}
-              <div
-                className={`w-full ${
-                  lyricsOn
-                    ? 'max-w-[340px] sm:max-w-[390px] lg:max-w-[430px]'
-                    : 'max-w-md sm:max-w-lg lg:max-w-[480px] xl:max-w-[520px]'
-                } mt-4 transition-all duration-300`}
-              >
+              {/* Integrated Live Beats Visualizer with Real-time Active Lyric line */}
+              <div className="w-full max-w-md sm:max-w-lg lg:max-w-[460px] xl:max-w-[500px] mt-4 space-y-3 transition-all duration-300">
                 <LiveBeatsVisualizer isPlaying={engineState.isPlaying} barCount={28} />
-              </div>
 
-              {/* Synchronized Live Lyrics directly below the thumbnail (Timer hidden, smooth active line animation) */}
-              {lyricsOn && (
-                <div
-                  className={`w-full ${
-                    lyricsOn
-                      ? 'max-w-[340px] sm:max-w-[390px] lg:max-w-[430px]'
-                      : 'max-w-md sm:max-w-lg'
-                  } mt-4 p-3.5 sm:p-4 rounded-2xl bg-black/85 backdrop-blur-md border border-neutral-800/90 shadow-[0_18px_40px_rgba(0,0,0,0.9)] transition-all`}
-                >
-                  <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-neutral-800/70">
-                    <div className="flex items-center gap-2">
-                      <Mic2 className="w-4 h-4 text-[#FF0000]" />
-                      <span className="text-xs font-semibold text-white tracking-wide">
-                        {remoteLyrics ? 'Synchronized Real Lyrics' : 'Live Sing-Along Lyrics'}
+                {/* When lyrics on: only the single active line right inside beats visualizer, tap opens full lyrics */}
+                {lyricsOn && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal('fullLyrics')}
+                    title="Click for full lyrics"
+                    className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-[#200505]/90 via-[#0A0A0A]/90 to-[#200505]/90 border border-[#BC0202]/60 hover:border-[#FF0000] shadow-[0_4px_22px_rgba(255,0,0,0.25)] transition-all cursor-pointer group text-center block"
+                  >
+                    <div className="flex items-center justify-between text-[11px] mb-1.5 text-neutral-400">
+                      <span className="flex items-center gap-1.5 font-bold text-[#FF0000] uppercase tracking-wider text-[10px]">
+                        <span className="w-2 h-2 rounded-full bg-[#FF0000] animate-pulse shadow-[0_0_8px_#FF0000]" />
+                        Now Singing
+                      </span>
+                      <span className="text-[10px] text-neutral-400 group-hover:text-white group-hover:underline transition-colors flex items-center gap-1">
+                        <span>Full Lyrics</span>
+                        <ChevronRight className="w-3 h-3 text-[#FF0000]" />
                       </span>
                     </div>
-                    {lyricsLoading ? (
-                      <span className="text-[11px] font-mono text-[#FF0000] animate-pulse">Syncing...</span>
-                    ) : (
-                      <span className="text-[10px] text-neutral-400 font-medium">Live Auto-Sync</span>
-                    )}
-                  </div>
-
-                  <div
-                    ref={lyricsListRef}
-                    className="space-y-1.5 max-h-48 sm:max-h-56 overflow-y-auto px-1 py-3 select-none scroll-smooth"
-                    style={{ scrollBehavior: 'smooth' }}
-                  >
-                    {lyrics.map((line, i) => {
-                      const isActiveLine = i === activeLyricIndex;
-                      return (
-                        <button
-                          key={`${line.timeSec}-${i}`}
-                          ref={isActiveLine ? activeLineRef : null}
-                          type="button"
-                          onClick={() => onSeek(line.timeSec)}
-                          className={`w-full text-left px-3.5 py-2.5 rounded-xl transition-all duration-300 flex items-center gap-3 cursor-pointer ${
-                            isActiveLine
-                              ? 'mm-lyric-line-active bg-gradient-to-r from-[#BC0202]/35 via-[#830000]/20 to-transparent border-l-4 border-l-[#FF0000] border-t border-b border-r border-[#FF0000]/25 text-white shadow-[0_4px_20px_rgba(255,0,0,0.25)]'
-                              : 'text-neutral-400 hover:text-neutral-200 opacity-40 hover:opacity-85 hover:bg-white/5 border border-transparent'
-                          }`}
-                        >
-                          {/* Live line indicator dot */}
-                          {isActiveLine ? (
-                            <span className="w-2 h-2 rounded-full bg-[#FF0000] shadow-[0_0_10px_#FF0000] shrink-0 animate-pulse" />
-                          ) : (
-                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-700/60 shrink-0" />
-                          )}
-                          <span
-                            className={`leading-snug transition-all duration-300 line-clamp-2 ${
-                              isActiveLine
-                                ? 'text-white font-bold text-sm sm:text-[15px] tracking-wide'
-                                : 'text-xs sm:text-sm font-medium'
-                            }`}
-                          >
-                            {line.text}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                    <p className="text-sm sm:text-base font-extrabold text-white tracking-wide leading-relaxed line-clamp-2 px-1">
+                      {lyrics[activeLyricIndex]?.text || '♪ Singing along...'}
+                    </p>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Right Column: Title, Heart, More, Scrubber, Transport, 15s Skip, Pills & Volume */}
@@ -724,23 +663,22 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     shuffleMode === 'smart'
                       ? 'Smart Shuffle (Favorites & Top Plays)'
                       : shuffleMode === 'standard'
-                      ? 'Standard Shuffle'
-                      : 'Shuffle Off'
+                        ? 'Standard Shuffle'
+                        : 'Shuffle Off'
                   }
                   title={
                     shuffleMode === 'smart'
                       ? 'Smart Shuffle: Prioritizes favorites & most played tracks'
                       : shuffleMode === 'standard'
-                      ? 'Standard Shuffle: Random'
-                      : 'Shuffle Off'
+                        ? 'Standard Shuffle: Random'
+                        : 'Shuffle Off'
                   }
-                  className={`relative p-2 rounded-full transition-all cursor-pointer ${
-                    shuffleMode === 'smart'
+                  className={`relative p-2 rounded-full transition-all cursor-pointer ${shuffleMode === 'smart'
                       ? 'text-[#FF0000] bg-[#FF0000]/15 ring-1 ring-[#FF0000]/50 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
                       : shuffleMode === 'standard'
-                      ? 'text-[#FF0000] bg-white/5'
-                      : 'text-neutral-400 hover:text-white'
-                  }`}
+                        ? 'text-[#FF0000] bg-white/5'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
                 >
                   <Shuffle className="w-5 h-5" />
                   {shuffleMode === 'smart' && (
@@ -788,9 +726,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   type="button"
                   onClick={onCycleRepeat}
                   aria-label="Repeat"
-                  className={`p-2 rounded-full transition-colors cursor-pointer ${
-                    repeatMode !== 'off' ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
-                  }`}
+                  className={`p-2 rounded-full transition-colors cursor-pointer ${repeatMode !== 'off' ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
+                    }`}
                 >
                   {repeatMode === 'one' ? (
                     <Repeat1 className="w-5 h-5" />
@@ -800,8 +737,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 </button>
               </div>
 
-              {/* Sub-Controls: -15s and +15s (Matching Reference Image) */}
-              <div className="flex items-center justify-center gap-8 py-0.5">
+              {/* Sub-Controls: -15s and +15s and Equalizer Icon Button (Beside 15s skip & next) */}
+              <div className="flex items-center justify-center gap-6 sm:gap-8 py-0.5">
                 <button
                   type="button"
                   onClick={() => audioEngine.skipBySeconds(-15)}
@@ -825,6 +762,20 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     <span className="absolute text-[8px] font-mono font-bold pt-0.5">15</span>
                   </div>
                 </button>
+
+                {/* Equalizer Icon-type Button right beside 15s skip */}
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(activeModal === 'equalizer' ? 'none' : 'equalizer')}
+                  aria-label="Equalizer & Audio Modes"
+                  title="5-Band Equalizer & Audio Modes"
+                  className={`flex items-center justify-center w-10 h-10 rounded-full transition-all cursor-pointer ${activeModal === 'equalizer' || engineState.eqEnabled
+                      ? 'bg-[#BC0202] text-white shadow-[0_0_14px_rgba(255,0,0,0.5)] ring-1 ring-[#FF0000]'
+                      : 'hover:bg-white/10 text-neutral-300 hover:text-white'
+                    }`}
+                >
+                  <Sliders className="w-5 h-5" />
+                </button>
               </div>
 
               {/* Compact Pill Buttons Row (Clean button form for secondary features) */}
@@ -833,11 +784,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 <button
                   type="button"
                   onClick={handleToggleLyricsOnOff}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                    lyricsOn
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${lyricsOn
                       ? 'bg-[#BC0202] border-[#FF0000] text-white shadow-[0_0_12px_rgba(255,0,0,0.4)]'
                       : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                  }`}
+                    }`}
                 >
                   <Mic2 className="w-3.5 h-3.5" />
                   <span>{lyricsOn ? 'Lyrics On' : 'Lyrics Off'}</span>
@@ -847,53 +797,49 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'speed' ? 'none' : 'speed')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                    engineState.playbackRate !== 1
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.playbackRate !== 1
                       ? 'bg-[#BC0202] border-[#FF0000] text-white'
                       : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                  }`}
+                    }`}
                 >
                   <Gauge className="w-3.5 h-3.5" />
                   <span>Speed {engineState.playbackRate !== 1 ? `(${engineState.playbackRate}x)` : ''}</span>
                 </button>
 
-                {/* 3. Sleep Timer Pill */}
+                {/* 3. 8D Audio Pill (Beside Lyrics and Speed) */}
+                <button
+                  type="button"
+                  onClick={() => audioEngine.setSpatial8dEnabled(!engineState.spatial8dEnabled)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.spatial8dEnabled
+                      ? 'bg-[#BC0202] border-[#FF0000] text-white shadow-[0_0_12px_rgba(255,0,0,0.4)]'
+                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                    }`}
+                >
+                  <Radio className="w-3.5 h-3.5" />
+                  <span>8D Audio {engineState.spatial8dEnabled ? 'On' : 'Off'}</span>
+                </button>
+
+                {/* 4. Sleep Timer Pill */}
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'sleep' ? 'none' : 'sleep')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                    sleepTimerMinutes !== null
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${sleepTimerMinutes !== null
                       ? 'bg-[#BC0202] border-[#FF0000] text-white'
                       : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                  }`}
+                    }`}
                 >
                   <Moon className="w-3.5 h-3.5" />
                   <span>Sleep timer {sleepTimerMinutes !== null ? `(${sleepTimerMinutes}m)` : ''}</span>
-                </button>
-
-                {/* 4. Equalizer Pill */}
-                <button
-                  type="button"
-                  onClick={() => setActiveModal('equalizer')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                    engineState.eqEnabled
-                      ? 'bg-[#BC0202] border-[#FF0000] text-white'
-                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                  }`}
-                >
-                  <Sliders className="w-3.5 h-3.5" />
-                  <span>EQ {engineState.eqEnabled ? 'On' : 'Off'}</span>
                 </button>
 
                 {/* 5. A-B Loop Pill */}
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'loop' ? 'none' : 'loop')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
-                    engineState.loopStartSec !== null || engineState.loopEndSec !== null
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.loopStartSec !== null || engineState.loopEndSec !== null
                       ? 'bg-[#BC0202] border-[#FF0000] text-white'
                       : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                  }`}
+                    }`}
                 >
                   <Repeat className="w-3.5 h-3.5" />
                   <span>A-B Loop</span>
@@ -1024,6 +970,17 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                         </div>
                       </>
                     )}
+                    {activeModal === 'fullLyrics' && (
+                      <>
+                        <div className="w-8 h-8 rounded-lg bg-[#BC0202]/20 text-[#FF0000] border border-[#FF0000]/30 flex items-center justify-center shrink-0">
+                          <Mic2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h2 className="text-base font-display font-bold text-white">Full Synchronized Lyrics</h2>
+                          <p className="text-[10px] text-neutral-400 font-normal">{currentTrack.cleanTitle} · {currentTrack.artistName}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
@@ -1074,11 +1031,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                         <button
                           type="button"
                           onClick={() => audioEngine.setEqEnabled(!engineState.eqEnabled)}
-                          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
-                            engineState.eqEnabled
+                          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${engineState.eqEnabled
                               ? 'bg-[#FF0000] text-white shadow-[0_0_12px_rgba(255,0,0,0.5)]'
                               : 'bg-neutral-900 text-neutral-400 border border-neutral-800 hover:text-white'
-                          }`}
+                            }`}
                         >
                           <Sliders className="w-3.5 h-3.5 shrink-0" />
                           <span>{engineState.eqEnabled ? 'EQ ON' : 'EQ OFF'}</span>
@@ -1088,17 +1044,15 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
 
                     {/* Status Banner */}
                     <div
-                      className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-3 ${
-                        engineState.eqEnabled
+                      className={`p-3 rounded-lg border text-xs flex items-center justify-between gap-3 ${engineState.eqEnabled
                           ? 'bg-[#830000]/20 border-[#FF0000]/50 text-white'
                           : 'bg-neutral-900/80 border-neutral-800 text-neutral-400'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          className={`w-2 h-2 rounded-full shrink-0 ${
-                            engineState.eqEnabled ? 'bg-[#FF0000] animate-pulse' : 'bg-neutral-600'
-                          }`}
+                          className={`w-2 h-2 rounded-full shrink-0 ${engineState.eqEnabled ? 'bg-[#FF0000] animate-pulse' : 'bg-neutral-600'
+                            }`}
                         />
                         <span>
                           {engineState.eqEnabled
@@ -1109,11 +1063,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                       <button
                         type="button"
                         onClick={() => audioEngine.setEqEnabled(!engineState.eqEnabled)}
-                        className={`px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer shrink-0 ${
-                          engineState.eqEnabled
+                        className={`px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer shrink-0 ${engineState.eqEnabled
                             ? 'bg-[#BC0202] hover:bg-[#FF0000] text-white'
                             : 'bg-neutral-800 hover:bg-neutral-700 text-white'
-                        }`}
+                          }`}
                       >
                         {engineState.eqEnabled ? 'TURN OFF' : 'TURN ON'}
                       </button>
@@ -1128,11 +1081,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                         <button
                           type="button"
                           onClick={() => audioEngine.setMegaBassEnabled(!engineState.megaBassEnabled)}
-                          className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
-                            engineState.megaBassEnabled
+                          className={`px-3 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${engineState.megaBassEnabled
                               ? 'bg-[#BC0202] border-[#FF0000] text-white shadow'
                               : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-                          }`}
+                            }`}
                         >
                           {engineState.megaBassEnabled ? 'X-BASS 55Hz: ACTIVE' : 'X-BASS 55Hz: OFF'}
                         </button>
@@ -1146,11 +1098,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                               key={modeKey}
                               type="button"
                               onClick={() => audioEngine.setVibeMode(modeKey)}
-                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                                active
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${active
                                   ? 'bg-gradient-to-br from-[#830000]/55 to-black border-[#FF0000] text-white'
                                   : 'bg-black border-neutral-800/90 text-neutral-300 hover:border-neutral-700'
-                              }`}
+                                }`}
                             >
                               <p className="text-xs font-semibold text-white truncate">{mode.label}</p>
                               <p className="text-[10px] text-neutral-400 truncate mt-0.5">{mode.subtitle}</p>
@@ -1174,11 +1125,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                               key={presetKey}
                               type="button"
                               onClick={() => audioEngine.setEqPreset(presetKey)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
-                                active
+                              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${active
                                   ? 'bg-[#830000]/50 border-[#FF0000] text-white font-semibold'
                                   : 'bg-black border-neutral-800 text-neutral-300 hover:border-neutral-700'
-                              }`}
+                                }`}
                             >
                               {preset.name}
                             </button>
@@ -1245,11 +1195,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     <div className="p-3 rounded-xl bg-gradient-to-r from-[#220707]/80 to-[#120808]/80 backdrop-blur-md border border-[#830000]/40 flex items-center justify-between gap-3 shadow-sm">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div
-                          className={`p-2 rounded-lg shrink-0 ${
-                            shuffleMode === 'smart'
+                          className={`p-2 rounded-lg shrink-0 ${shuffleMode === 'smart'
                               ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.4)]'
                               : 'bg-neutral-800 text-neutral-400'
-                          }`}
+                            }`}
                         >
                           <Sparkles className="w-4 h-4" />
                         </div>
@@ -1281,11 +1230,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                         <button
                           type="button"
                           onClick={onToggleShuffle}
-                          className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-                            shuffleMode === 'smart'
+                          className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors cursor-pointer ${shuffleMode === 'smart'
                               ? 'bg-[#FF0000] text-white hover:bg-[#d80000]'
                               : 'bg-neutral-800 hover:bg-neutral-700 text-neutral-300'
-                          }`}
+                            }`}
                         >
                           {shuffleMode === 'smart' ? 'Smart On' : shuffleMode === 'standard' ? 'Standard' : 'Turn On'}
                         </button>
@@ -1293,72 +1241,71 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     </div>
 
                     <div className="divide-y divide-neutral-800/70 max-h-96 overflow-y-auto pr-1">
-                    {queue.map((item, idx) => {
-                      const isCurrent = idx === currentIndex;
-                      return (
-                        <div
-                          key={`${item.id}-${idx}`}
-                          className={`py-2.5 px-3 rounded-lg flex items-center justify-between gap-3 transition-colors ${
-                            isCurrent ? 'bg-[#830000]/25 border border-[#BC0202]/40' : 'hover:bg-neutral-900/70'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span className="w-5 text-xs font-mono tabular-nums text-neutral-500 text-right">
-                              {idx + 1}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onPlayQueueIndex(idx);
-                                setActiveModal('none');
-                              }}
-                              className="text-left min-w-0 cursor-pointer"
-                            >
-                              <p className={`text-sm font-medium truncate ${isCurrent ? 'text-[#FF0000]' : 'text-white'}`}>
-                                {item.cleanTitle}
-                              </p>
-                              <p className="text-xs text-neutral-400 truncate">
-                                {item.artistName} · {item.language}
-                              </p>
-                            </button>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="text-xs font-mono tabular-nums text-neutral-400 mr-1">
-                              {formatDuration(item.duration)}
-                            </span>
-                            <button
-                              type="button"
-                              disabled={idx === 0}
-                              onClick={() => onMoveQueueItem(idx, 'up')}
-                              aria-label="Move track up"
-                              className="p-1.5 rounded bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-30 cursor-pointer"
-                            >
-                              <ArrowUp className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={idx === queue.length - 1}
-                              onClick={() => onMoveQueueItem(idx, 'down')}
-                              aria-label="Move track down"
-                              className="p-1.5 rounded bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-30 cursor-pointer"
-                            >
-                              <ArrowDown className="w-3.5 h-3.5" />
-                            </button>
-                            {!isCurrent && (
+                      {queue.map((item, idx) => {
+                        const isCurrent = idx === currentIndex;
+                        return (
+                          <div
+                            key={`${item.id}-${idx}`}
+                            className={`py-2.5 px-3 rounded-lg flex items-center justify-between gap-3 transition-colors ${isCurrent ? 'bg-[#830000]/25 border border-[#BC0202]/40' : 'hover:bg-neutral-900/70'
+                              }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="w-5 text-xs font-mono tabular-nums text-neutral-500 text-right">
+                                {idx + 1}
+                              </span>
                               <button
                                 type="button"
-                                onClick={() => onRemoveFromQueue(idx)}
-                                aria-label="Remove from queue"
-                                className="p-1.5 rounded bg-neutral-900 text-neutral-400 hover:text-[#FF0000] cursor-pointer"
+                                onClick={() => {
+                                  onPlayQueueIndex(idx);
+                                  setActiveModal('none');
+                                }}
+                                className="text-left min-w-0 cursor-pointer"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <p className={`text-sm font-medium truncate ${isCurrent ? 'text-[#FF0000]' : 'text-white'}`}>
+                                  {item.cleanTitle}
+                                </p>
+                                <p className="text-xs text-neutral-400 truncate">
+                                  {item.artistName} · {item.language}
+                                </p>
                               </button>
-                            )}
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-xs font-mono tabular-nums text-neutral-400 mr-1">
+                                {formatDuration(item.duration)}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={idx === 0}
+                                onClick={() => onMoveQueueItem(idx, 'up')}
+                                aria-label="Move track up"
+                                className="p-1.5 rounded bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={idx === queue.length - 1}
+                                onClick={() => onMoveQueueItem(idx, 'down')}
+                                aria-label="Move track down"
+                                className="p-1.5 rounded bg-neutral-900 text-neutral-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </button>
+                              {!isCurrent && (
+                                <button
+                                  type="button"
+                                  onClick={() => onRemoveFromQueue(idx)}
+                                  aria-label="Remove from queue"
+                                  className="p-1.5 rounded bg-neutral-900 text-neutral-400 hover:text-[#FF0000] cursor-pointer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1377,11 +1324,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                             onSetPlaybackRate(rate);
                             setActiveModal('none');
                           }}
-                          className={`p-3 rounded-xl border text-center font-mono font-semibold transition-all cursor-pointer ${
-                            engineState.playbackRate === rate
+                          className={`p-3 rounded-xl border text-center font-mono font-semibold transition-all cursor-pointer ${engineState.playbackRate === rate
                               ? 'bg-[#BC0202] border-[#FF0000] text-white shadow'
                               : 'bg-black border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                          }`}
+                            }`}
                         >
                           <span className="text-base">{rate}x</span>
                           <span className="block text-[10px] text-neutral-400 font-sans mt-0.5">
@@ -1406,11 +1352,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                             onSetSleepTimer(mins);
                             setActiveModal('none');
                           }}
-                          className={`p-3 rounded-xl border text-center font-mono font-semibold transition-all cursor-pointer ${
-                            sleepTimerMinutes === mins
+                          className={`p-3 rounded-xl border text-center font-mono font-semibold transition-all cursor-pointer ${sleepTimerMinutes === mins
                               ? 'bg-[#BC0202] border-[#FF0000] text-white shadow'
                               : 'bg-black border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
-                          }`}
+                            }`}
                         >
                           <span className="text-base">{mins === null ? 'Off' : `${mins}m`}</span>
                           <span className="block text-[10px] text-neutral-400 font-sans mt-0.5">
@@ -1491,11 +1436,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     <button
                       type="button"
                       onClick={() => audioEngine.setSpatial8dEnabled(!engineState.spatial8dEnabled)}
-                      className={`w-full p-3 rounded-xl text-left text-xs font-medium border transition-colors flex items-center justify-between cursor-pointer ${
-                        engineState.spatial8dEnabled
+                      className={`w-full p-3 rounded-xl text-left text-xs font-medium border transition-colors flex items-center justify-between cursor-pointer ${engineState.spatial8dEnabled
                           ? 'bg-[#830000]/30 border-[#FF0000] text-white'
                           : 'bg-black hover:bg-neutral-900 border-neutral-800 text-white'
-                      }`}
+                        }`}
                     >
                       <span>8D Spatial Surround Sound</span>
                       <span className="font-mono text-xs text-[#FF0000]">
@@ -1513,6 +1457,49 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                       </span>
                       <span className="text-neutral-500">MP3</span>
                     </a>
+                  </div>
+                )}
+
+                {/* Full Lyrics Modal View */}
+                {activeModal === 'fullLyrics' && (
+                  <div className="space-y-3 py-2 flex flex-col flex-1 min-h-0">
+                    <div className="flex items-center justify-between text-xs text-neutral-400 pb-2 border-b border-neutral-800/80">
+                      <span>Tap any line to jump audio</span>
+                      <span className="text-[11px] font-mono text-[#FF0000]">{lyrics.length} lines</span>
+                    </div>
+
+                    <div
+                      ref={lyricsListRef}
+                      className="space-y-1.5 flex-1 overflow-y-auto px-1 py-2 select-none scroll-smooth max-h-[68vh]"
+                    >
+                      {lyrics.map((line, i) => {
+                        const isActiveLine = i === activeLyricIndex;
+                        return (
+                          <button
+                            key={`${line.timeSec}-${i}`}
+                            ref={isActiveLine ? activeLineRef : null}
+                            type="button"
+                            onClick={() => onSeek(line.timeSec)}
+                            className={`w-full text-left px-3.5 py-3 rounded-xl transition-all duration-300 flex items-center justify-between gap-3 cursor-pointer ${isActiveLine
+                                ? 'bg-gradient-to-r from-[#BC0202]/40 via-[#830000]/25 to-transparent border-l-4 border-l-[#FF0000] border-t border-b border-r border-[#FF0000]/30 text-white shadow-[0_4px_22px_rgba(255,0,0,0.3)] font-bold text-sm sm:text-base'
+                                : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent text-xs sm:text-sm'
+                              }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              {isActiveLine ? (
+                                <span className="w-2 h-2 rounded-full bg-[#FF0000] shadow-[0_0_10px_#FF0000] shrink-0 animate-pulse" />
+                              ) : (
+                                <span className="w-1.5 h-1.5 rounded-full bg-neutral-700/60 shrink-0" />
+                              )}
+                              <span className="leading-relaxed">{line.text}</span>
+                            </div>
+                            <span className="text-[10px] font-mono text-neutral-500 tabular-nums shrink-0 ml-2">
+                              {formatDuration(line.timeSec)}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </aside>
@@ -1630,9 +1617,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               type="button"
               onClick={() => onToggleLike(currentTrack.id)}
               aria-label={isLiked ? 'Unlike track' : 'Like track'}
-              className={`p-1.5 rounded-lg transition-colors shrink-0 cursor-pointer ${
-                isLiked ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`p-1.5 rounded-lg transition-colors shrink-0 cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
+                }`}
             >
               <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000]' : ''}`} />
             </button>
@@ -1648,19 +1634,18 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   shuffleMode === 'smart'
                     ? 'Smart Shuffle (Favorites & Top Plays)'
                     : shuffleMode === 'standard'
-                    ? 'Standard Shuffle'
-                    : 'Toggle shuffle'
+                      ? 'Standard Shuffle'
+                      : 'Toggle shuffle'
                 }
                 title={
                   shuffleMode === 'smart'
                     ? 'Smart Shuffle: Boosts favorites & top plays'
                     : shuffleMode === 'standard'
-                    ? 'Standard Shuffle'
-                    : 'Shuffle Off'
+                      ? 'Standard Shuffle'
+                      : 'Shuffle Off'
                 }
-                className={`relative hidden md:inline-flex p-1.5 rounded transition-colors cursor-pointer ${
-                  shuffle ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`relative hidden md:inline-flex p-1.5 rounded transition-colors cursor-pointer ${shuffle ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
+                  }`}
               >
                 <Shuffle className="w-4 h-4" />
                 {shuffleMode === 'smart' && (
@@ -1705,9 +1690,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 type="button"
                 onClick={onCycleRepeat}
                 aria-label="Repeat mode"
-                className={`hidden md:inline-flex p-1.5 rounded transition-colors cursor-pointer ${
-                  repeatMode !== 'off' ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`hidden md:inline-flex p-1.5 rounded transition-colors cursor-pointer ${repeatMode !== 'off' ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
+                  }`}
               >
                 {repeatMode === 'one' ? (
                   <Repeat1 className="w-4 h-4" />
@@ -1743,11 +1727,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               onClick={handleToggleLyricsOnOff}
               aria-label="Toggle Live Lyrics On or Off"
               title="Toggle Live Lyrics ON / OFF (Shortcut: L)"
-              className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                lyricsOn
+              className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${lyricsOn
                   ? 'bg-[#BC0202] border-[#FF0000] text-white'
                   : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               <Mic2 className="w-3 h-3 shrink-0" />
               <span className="hidden xl:inline">{lyricsOn ? 'LYRICS ON' : 'LYRICS OFF'}</span>
@@ -1763,11 +1746,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               }
               aria-label="Toggle Slowed + Reverb Mode"
               title="Toggle Slowed + Reverb (0.86x Dreamy Pitch)"
-              className={`hidden md:inline-flex px-2 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                engineState.vibeMode === 'slowed_reverb'
+              className={`hidden md:inline-flex px-2 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${engineState.vibeMode === 'slowed_reverb'
                   ? 'bg-[#830000]/80 border-[#FF0000] text-white'
                   : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               SLOWED
             </button>
@@ -1777,11 +1759,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               onClick={() => audioEngine.setSpatial8dEnabled(!engineState.spatial8dEnabled)}
               aria-label="Toggle 8D Spatial Surround Audio"
               title="Toggle 8D Spatial Surround Audio"
-              className={`px-1.5 sm:px-2 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                engineState.spatial8dEnabled
+              className={`px-1.5 sm:px-2 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${engineState.spatial8dEnabled
                   ? 'bg-[#830000]/70 border-[#FF0000] text-white'
                   : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               8D
             </button>
@@ -1791,11 +1772,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               onClick={() => audioEngine.setMegaBassEnabled(!engineState.megaBassEnabled)}
               aria-label="Toggle X-Bass 55Hz Sub-Woofer"
               title="Toggle X-Bass 55Hz Sub-Woofer Boost"
-              className={`px-1.5 sm:px-2 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-                engineState.megaBassEnabled
+              className={`px-1.5 sm:px-2 py-1 rounded-md text-[10px] font-mono font-bold border transition-colors cursor-pointer whitespace-nowrap shrink-0 ${engineState.megaBassEnabled
                   ? 'bg-[#BC0202] border-[#FF0000] text-white'
                   : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-              }`}
+                }`}
             >
               BASS
             </button>
@@ -1815,11 +1795,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     ? 'Equalizer: ON (Tap to turn OFF - 0dB flat original audio)'
                     : 'Equalizer: OFF (Tap to turn ON)'
                 }
-                className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 text-[10px] font-mono font-bold transition-colors cursor-pointer whitespace-nowrap ${
-                  engineState.eqEnabled
+                className={`inline-flex items-center gap-1 px-2 sm:px-2.5 py-1 text-[10px] font-mono font-bold transition-colors cursor-pointer whitespace-nowrap ${engineState.eqEnabled
                     ? 'bg-[#BC0202] text-white shadow-[0_0_8px_rgba(255,0,0,0.4)]'
                     : 'bg-black text-neutral-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <Sliders className="w-3 h-3 shrink-0" />
                 <span>{engineState.eqEnabled ? 'EQ ON' : 'EQ OFF'}</span>
@@ -1845,9 +1824,8 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 setQueueOpen((prev) => !prev);
               }}
               aria-label="Open queue"
-              className={`p-1.5 sm:p-2 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                queueOpen ? 'text-[#FF0000] bg-[#830000]/25' : 'text-neutral-400 hover:text-white'
-              }`}
+              className={`p-1.5 sm:p-2 rounded-lg transition-colors cursor-pointer shrink-0 ${queueOpen ? 'text-[#FF0000] bg-[#830000]/25' : 'text-neutral-400 hover:text-white'
+                }`}
             >
               <ListMusic className="w-4 h-4" />
             </button>

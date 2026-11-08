@@ -111,6 +111,7 @@ export interface UserAccount {
   status: 'active' | 'suspended';
   privateHistory: boolean;
   publicProfile: boolean;
+  avatarUrl?: string;
   createdAt: string;
 }
 

@@ -122,33 +122,9 @@ async function startServer() {
     }
 
     if (targetStreamUrl) {
-      try {
-        const upstreamHeaders: Record<string, string> = {};
-        if (req.headers.range) {
-          upstreamHeaders['Range'] = req.headers.range;
-        }
-        const upstreamRes = await fetch(targetStreamUrl, {
-          headers: upstreamHeaders,
-        });
-        if (upstreamRes.ok || upstreamRes.status === 206) {
-          res.status(upstreamRes.status);
-          res.setHeader('Content-Type', upstreamRes.headers.get('content-type') || 'audio/mp4');
-          res.setHeader('Accept-Ranges', 'bytes');
-          res.setHeader('Access-Control-Allow-Origin', '*');
-          const contentLen = upstreamRes.headers.get('content-length');
-          if (contentLen) res.setHeader('Content-Length', contentLen);
-          const contentRange = upstreamRes.headers.get('content-range');
-          if (contentRange) res.setHeader('Content-Range', contentRange);
-          res.setHeader('Cache-Control', 'public, max-age=3600');
-
-          if (upstreamRes.body) {
-            Readable.fromWeb(upstreamRes.body as unknown as import('stream/web').ReadableStream).pipe(res);
-            return;
-          }
-        }
-      } catch {
-        // Fall through to buffer resolver if direct pipe fails
-      }
+      // Direct CDN 302 redirect: zero server buffering overhead, instant byte-range audio playback
+      res.redirect(302, targetStreamUrl);
+      return;
     }
 
     const audioEntry = await resolveRealAudioBuffer({

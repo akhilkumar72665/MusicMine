@@ -144,8 +144,8 @@ interface SaavnSongItem {
 async function searchFastDirectCatalog(query: string): Promise<Track[]> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
-    const url = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&api_version=4&ctx=web6dot0&n=14&q=${encodeURIComponent(
+    const timeout = setTimeout(() => controller.abort(), 2800);
+    const url = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&api_version=4&ctx=web6dot0&n=30&q=${encodeURIComponent(
       query
     )}`;
 
@@ -158,7 +158,7 @@ async function searchFastDirectCatalog(query: string): Promise<Track[]> {
     if (results.length === 0) return [];
 
     const tracks = await Promise.all(
-      results.slice(0, 12).map(async (item): Promise<Track | null> => {
+      results.slice(0, 30).map(async (item): Promise<Track | null> => {
         if (!item.id || !item.title) return null;
         const cleanTitle = decodeHtmlEntities(item.title);
         const primaryArtists =
@@ -185,14 +185,17 @@ async function searchFastDirectCatalog(query: string): Promise<Track[]> {
           directStreamUrlCache.set(`svn-${item.id}`, streamUrl);
         }
 
+        const safeArtistId = `art-${artistName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'various'}`;
+        const safeAlbumId = `alb-${albumName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'single'}`;
+
         return {
           id: `trk-svn-${item.id}`,
           providerId: `svn-${item.id}`,
           title: `${cleanTitle} - ${artistName}`,
           cleanTitle,
-          artistId: 'art-arijit-singh',
+          artistId: safeArtistId,
           artistName,
-          albumId: 'alb-stree-2',
+          albumId: safeAlbumId,
           albumName,
           duration,
           uploader: decodeHtmlEntities(item.more_info?.label || artistName),

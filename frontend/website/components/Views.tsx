@@ -438,8 +438,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           onClick={() => setHeroSlideIndex(i)}
                           aria-label={`Slide ${i + 1}`}
                           className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${i === safeHeroIndex
-                              ? 'w-7 bg-white shadow-[0_0_8px_white]'
-                              : 'w-3.5 bg-neutral-700 hover:bg-neutral-500'
+                            ? 'w-7 bg-white shadow-[0_0_8px_white]'
+                            : 'w-3.5 bg-neutral-700 hover:bg-neutral-500'
                             }`}
                         />
                       ))}
@@ -506,8 +506,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
               type="button"
               onClick={() => setActiveCategory(activeCategory === cat ? 'All' : cat)}
               className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${isActive
-                  ? 'bg-white text-black shadow'
-                  : 'bg-[#121212] hover:bg-[#1a1a1a] text-neutral-300 hover:text-white border border-neutral-800/80'
+                ? 'bg-white text-black shadow'
+                : 'bg-[#121212] hover:bg-[#1a1a1a] text-neutral-300 hover:text-white border border-neutral-800/80'
                 }`}
             >
               {cat}
@@ -537,8 +537,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div
                   key={`quick-${track.id}`}
                   className={`mm-spotify-tile group relative flex items-center justify-between gap-3 rounded-xl overflow-hidden border pr-3 ${isCurrent
-                      ? 'bg-gradient-to-r from-[#830000]/45 via-[#140505] to-[#0A0A0A] border-[#FF0000]'
-                      : 'bg-[#0D0D0D]/95 hover:bg-[#171717] border-neutral-800/90 hover:border-[#BC0202]/70'
+                    ? 'bg-gradient-to-r from-[#830000]/45 via-[#140505] to-[#0A0A0A] border-[#FF0000]'
+                    : 'bg-[#0D0D0D]/95 hover:bg-[#171717] border-neutral-800/90 hover:border-[#BC0202]/70'
                     }`}
                 >
                   <button
@@ -570,8 +570,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       onClick={() => onPlayTrack(track, filteredTracks)}
                       aria-label={isCurrent && isPlaying ? `Pause ${track.cleanTitle}` : `Play ${track.cleanTitle}`}
                       className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all cursor-pointer ${isCurrent && isPlaying
-                          ? 'bg-[#FF0000] text-white scale-100'
-                          : 'bg-[#BC0202] group-hover:bg-[#FF0000] text-white opacity-90 group-hover:opacity-100'
+                        ? 'bg-[#FF0000] text-white scale-100'
+                        : 'bg-[#BC0202] group-hover:bg-[#FF0000] text-white opacity-90 group-hover:opacity-100'
                         }`}
                     >
                       {isCurrent && isPlaying ? (
@@ -618,8 +618,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 <div
                   key={`chart-${track.id}`}
                   className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${isCurrent
-                      ? 'bg-gradient-to-r from-[#830000]/45 via-[#120404] to-black border-[#FF0000]'
-                      : 'bg-[#0A0A0A] hover:bg-[#121212] border-neutral-800/90 hover:border-neutral-700'
+                    ? 'bg-gradient-to-r from-[#830000]/45 via-[#120404] to-black border-[#FF0000]'
+                    : 'bg-[#0A0A0A] hover:bg-[#121212] border-neutral-800/90 hover:border-neutral-700'
                     }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
@@ -728,8 +728,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         <div
                           key={`${track.id}-slide-${slideIdx}`}
                           className={`group w-60 shrink-0 rounded-xl p-3 border transition-all duration-300 ${isCurrent
-                              ? 'bg-gradient-to-b from-[#830000]/45 to-[#0D0D0D] border-[#FF0000]'
-                              : 'bg-[#0A0A0A] hover:bg-gradient-to-b hover:from-[#830000]/25 hover:to-[#0D0D0D] border-neutral-800 hover:border-[#BC0202]'
+                            ? 'bg-gradient-to-b from-[#830000]/45 to-[#0D0D0D] border-[#FF0000]'
+                            : 'bg-[#0A0A0A] hover:bg-gradient-to-b hover:from-[#830000]/25 hover:to-[#0D0D0D] border-neutral-800 hover:border-[#BC0202]'
                             }`}
                         >
                           <div className="relative">
@@ -801,8 +801,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <div
                       key={track.id}
                       className={`group relative rounded-xl p-3.5 border transition-colors flex items-center gap-3.5 ${isCurrent
-                          ? 'bg-gradient-to-r from-[#830000]/35 to-[#0D0D0D] border-[#BC0202]'
-                          : 'bg-[#0A0A0A] hover:bg-gradient-to-r hover:from-[#830000]/20 hover:to-[#0D0D0D] border-neutral-800/90'
+                        ? 'bg-gradient-to-r from-[#830000]/35 to-[#0D0D0D] border-[#BC0202]'
+                        : 'bg-[#0A0A0A] hover:bg-gradient-to-r hover:from-[#830000]/20 hover:to-[#0D0D0D] border-neutral-800/90'
                         }`}
                     >
                       <button
@@ -1058,7 +1058,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
       const updated = [term, ...filtered].slice(0, 5);
       try {
         localStorage.setItem('musicmine_recent_searches', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -1069,7 +1069,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
       const updated = prev.filter((item) => item !== termToRemove);
       try {
         localStorage.setItem('musicmine_recent_searches', JSON.stringify(updated));
-      } catch {}
+      } catch { }
       return updated;
     });
   };
@@ -1079,7 +1079,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
     setRecentSearches([]);
     try {
       localStorage.removeItem('musicmine_recent_searches');
-    } catch {}
+    } catch { }
   };
 
   const trendingSearches = [
@@ -1351,25 +1351,68 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
   const matchedArtists = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return artists.slice(0, 3);
-    return artists.filter(
+    const list = [...artists];
+    const artistNames = new Set(list.map((a) => a.name.toLowerCase()));
+
+    for (const t of matchedTracks) {
+      if (t.artistName && !artistNames.has(t.artistName.toLowerCase())) {
+        artistNames.add(t.artistName.toLowerCase());
+        list.push({
+          id: t.artistId || `art-${t.artistName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+          name: t.artistName,
+          primaryLanguage: t.language || 'Hindi',
+          genres: ['Bollywood', t.genre],
+          bio: `Featured artist on MusicMine. Singer of ${t.cleanTitle}.`,
+          monthlyListenersLabel: 'Trending on MusicMine',
+          verifiedMetadata: true,
+          sourceType: 'API_CONTRACT_SAMPLE',
+          accentHex: '#BC0202',
+          avatarUrl: t.thumbnailUrl,
+        });
+      }
+    }
+
+    if (!q) return list.slice(0, 6);
+    return list.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.primaryLanguage.toLowerCase().includes(q) ||
         a.genres.some((g) => g.toLowerCase().includes(q))
     );
-  }, [artists, query]);
+  }, [artists, query, matchedTracks]);
 
   const matchedAlbums = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return albums.slice(0, 3);
-    return albums.filter(
+    const list = [...albums];
+    const albumTitles = new Set(list.map((al) => al.title.toLowerCase()));
+
+    for (const t of matchedTracks) {
+      if (t.albumName && !albumTitles.has(t.albumName.toLowerCase())) {
+        albumTitles.add(t.albumName.toLowerCase());
+        list.push({
+          id: t.albumId || `alb-${t.albumName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+          title: t.albumName,
+          artistId: t.artistId || 'art-various',
+          artistName: t.artistName || 'Various Artists',
+          releaseYear: t.releaseYear || 2024,
+          language: t.language || 'Hindi',
+          genre: 'Soundtrack',
+          trackIds: [t.id],
+          sourceType: 'API_CONTRACT_SAMPLE',
+          accentHex: '#BC0202',
+          coverUrl: t.thumbnailUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80',
+        });
+      }
+    }
+
+    if (!q) return list.slice(0, 6);
+    return list.filter(
       (al) =>
         al.title.toLowerCase().includes(q) ||
         al.artistName.toLowerCase().includes(q) ||
         al.language.toLowerCase().includes(q)
     );
-  }, [albums, query]);
+  }, [albums, query, matchedTracks]);
 
   return (
     <div className="space-y-8 pb-8">
@@ -1507,8 +1550,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                 saveRecentSearch(sug);
               }}
               className={`px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${query.toLowerCase() === sug.toLowerCase()
-                  ? 'bg-[#830000]/40 border-[#FF0000] text-white'
-                  : 'bg-black border-neutral-800 text-neutral-300 hover:border-neutral-700'
+                ? 'bg-[#830000]/40 border-[#FF0000] text-white'
+                : 'bg-black border-neutral-800 text-neutral-300 hover:border-neutral-700'
                 }`}
             >
               {sug}
@@ -1546,8 +1589,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   type="button"
                   onClick={() => setSelectedGenre(cat.id)}
                   className={`group px-3.5 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-2 border shadow-sm ${isActive
-                      ? 'bg-[#BC0202] text-white border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.4)] ring-1 ring-[#FF0000]/60'
-                      : 'bg-[#121212] text-neutral-300 hover:text-white border-neutral-800 hover:border-neutral-700 hover:bg-[#181818]'
+                    ? 'bg-[#BC0202] text-white border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.4)] ring-1 ring-[#FF0000]/60'
+                    : 'bg-[#121212] text-neutral-300 hover:text-white border-neutral-800 hover:border-neutral-700 hover:bg-[#181818]'
                     }`}
                 >
                   {cat.icon === 'romantic' && (
@@ -1577,8 +1620,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   <span>{cat.label}</span>
                   <span
                     className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${isActive
-                        ? 'bg-black/35 text-white'
-                        : 'bg-neutral-800 text-neutral-400 group-hover:text-neutral-200'
+                      ? 'bg-black/35 text-white'
+                      : 'bg-neutral-800 text-neutral-400 group-hover:text-neutral-200'
                       }`}
                   >
                     {count}
@@ -1617,8 +1660,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                       type="button"
                       onClick={() => setSelectedGenre(cat.id)}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20 bg-gradient-to-br ${cat.gradient} ${isSelected
-                          ? 'border-[#FF0000] ring-1 ring-[#FF0000]/50 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
-                          : 'border-neutral-800/80 hover:border-neutral-700 hover:scale-[1.01]'
+                        ? 'border-[#FF0000] ring-1 ring-[#FF0000]/50 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
+                        : 'border-neutral-800/80 hover:border-neutral-700 hover:scale-[1.01]'
                         }`}
                     >
                       <div className="flex items-center justify-between">
@@ -1713,17 +1756,23 @@ export const SearchView: React.FC<SearchViewProps> = ({
                       </td>
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
-                          <ArtworkTile
-                            title={track.cleanTitle}
-                            thumbnailUrl={track.thumbnailUrl}
-                            size="sm"
-                            className="w-10 h-10"
-                          />
+                          <button
+                            type="button"
+                            onClick={() => onPlayTrack(track, matchedTracks)}
+                            className="shrink-0 cursor-pointer"
+                          >
+                            <ArtworkTile
+                              title={track.cleanTitle}
+                              thumbnailUrl={track.thumbnailUrl}
+                              size="sm"
+                              className="w-10 h-10"
+                            />
+                          </button>
                           <div className="min-w-0">
                             <button
                               type="button"
-                              onClick={() => onNavigate(`/track/${track.id}`)}
-                              className={`font-semibold truncate block text-left hover:underline cursor-pointer ${isCurrent ? 'text-[#FF0000]' : 'text-white'
+                              onClick={() => onPlayTrack(track, matchedTracks)}
+                              className={`font-semibold truncate block text-left hover:text-[#FF0000] cursor-pointer ${isCurrent ? 'text-[#FF0000]' : 'text-white'
                                 }`}
                             >
                               {track.cleanTitle}
@@ -1816,7 +1865,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
         <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
           <h3 className="text-base font-display font-semibold text-white">
-            Albums ({matchedAlbums.length})
+            🎬 Movies &amp; Soundtracks ({matchedAlbums.length})
           </h3>
           <div className="space-y-2">
             {matchedAlbums.map((al) => (
@@ -1827,7 +1876,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                 className="w-full p-2.5 rounded-lg hover:bg-neutral-900 flex items-center justify-between gap-3 text-left transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <ArtworkTile title={al.title} thumbnailUrl={al.coverUrl} accentHex={al.accentHex} size="sm" className="w-10 h-10" />
+                  <ArtworkTile title={al.title} thumbnailUrl={al.coverUrl} accentHex={al.accentHex} size="sm" className="w-10 h-10 rounded-lg" />
                   <div>
                     <p className="text-sm font-medium text-white">{al.title}</p>
                     <p className="text-xs text-neutral-400">
@@ -1835,7 +1884,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
                     </p>
                   </div>
                 </div>
-                <span className="text-xs text-neutral-500">View →</span>
+                <span className="text-xs text-neutral-500">View Songs →</span>
               </button>
             ))}
           </div>
@@ -1863,6 +1912,7 @@ interface EntityDetailViewProps {
   onToggleSaveAlbum: (albumId: string) => void;
   onToggleFollowArtist: (artistId: string) => void;
   onNavigate: (path: RoutePath) => void;
+  onTracksDiscovered?: (tracks: Track[]) => void;
 }
 
 export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
@@ -1880,6 +1930,7 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
   onToggleSaveAlbum,
   onToggleFollowArtist,
   onNavigate,
+  onTracksDiscovered,
 }) => {
   if (entityType === 'track') {
     const track = tracks.find((t) => t.id === entityId) || tracks[0];
@@ -1956,7 +2007,7 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
         {/* Track Credits & Info */}
         <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
           <h2 className="text-base font-display font-semibold text-white">
-            Credits & Release Details
+            Credits &amp; Release Details
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div className="p-3.5 rounded-lg bg-black border border-neutral-800">
@@ -1964,7 +2015,7 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
               <p className="text-white font-medium mt-0.5">{track.uploader}</p>
             </div>
             <div className="p-3.5 rounded-lg bg-black border border-neutral-800">
-              <p className="text-neutral-500">Language & Genre</p>
+              <p className="text-neutral-500">Language &amp; Genre</p>
               <p className="text-white font-medium mt-0.5">
                 {track.language} · {track.genre}
               </p>
@@ -1982,8 +2033,59 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
   }
 
   if (entityType === 'artist') {
-    const artist = artists.find((a) => a.id === entityId) || artists[0];
-    const artistTracks = tracks.filter((t) => t.artistId === artist.id && t.visibleInCatalog);
+    const foundArtist = artists.find((a) => a.id === entityId);
+    const artist = foundArtist || {
+      id: entityId,
+      name: entityId.replace(/^art-/, '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+      bio: 'Trending Artist on MusicMine',
+      primaryLanguage: 'Hindi' as const,
+      genres: ['Bollywood', 'Playback'],
+      monthlyListenersLabel: 'Trending on MusicMine',
+      verifiedMetadata: true,
+      sourceType: 'API_CONTRACT_SAMPLE' as const,
+      accentHex: '#BC0202',
+      avatarUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80',
+    };
+
+    const [artistTracks, setArtistTracks] = useState<Track[]>(() => {
+      return tracks.filter(
+        (t) =>
+          t.visibleInCatalog &&
+          (t.artistId === artist.id ||
+            t.artistName.toLowerCase().includes(artist.name.toLowerCase()))
+      );
+    });
+    const [isLoadingSongs, setIsLoadingSongs] = useState(false);
+
+    useEffect(() => {
+      let isMounted = true;
+      setIsLoadingSongs(true);
+
+      fetchSearchTracks(artist.name)
+        .then((fetched) => {
+          if (!isMounted) return;
+          setIsLoadingSongs(false);
+          if (fetched && fetched.length > 0) {
+            setArtistTracks((prev) => {
+              const map = new Map<string, Track>();
+              for (const t of prev) map.set(t.id, t);
+              for (const t of fetched) {
+                map.set(t.id, t);
+              }
+              return Array.from(map.values());
+            });
+            onTracksDiscovered?.(fetched);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setIsLoadingSongs(false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }, [artist.id, artist.name]);
+
     const artistAlbums = albums.filter((al) => al.artistId === artist.id);
     const isFollowed = followedArtistIds.includes(artist.id);
 
@@ -1996,29 +2098,34 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
             accentHex={artist.accentHex}
             size="xl"
             rounded="full"
-            className="w-36 h-36 sm:w-44 sm:h-44"
+            className="w-36 h-36 sm:w-44 sm:h-44 shadow-2xl"
           />
           <div className="space-y-3 flex-1 text-center sm:text-left">
-            <p className="text-xs text-neutral-400">
-              Artist · {artist.primaryLanguage} · {artist.monthlyListenersLabel}
-            </p>
-            <h1 className="text-3xl font-display font-bold text-white">{artist.name}</h1>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-neutral-900 border border-neutral-700 text-neutral-300">
+                Verified Artist
+              </span>
+              <span className="text-xs text-neutral-400">
+                {artist.primaryLanguage} · {artist.monthlyListenersLabel}
+              </span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-white">{artist.name}</h1>
             <p className="text-sm text-neutral-300 max-w-2xl">{artist.bio}</p>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
               {artistTracks.length > 0 && (
                 <button
                   type="button"
                   onClick={() => onPlayTrack(artistTracks[0], artistTracks)}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer shadow-lg transition-transform active:scale-95"
                 >
                   <Play className="w-4 h-4 fill-current" />
-                  <span>Play Top Songs</span>
+                  <span>Play All Songs ({artistTracks.length})</span>
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => onToggleFollowArtist(artist.id)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black border border-neutral-800 text-xs font-medium text-white hover:border-[#FF0000] cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black border border-neutral-800 text-xs font-medium text-white hover:border-[#FF0000] cursor-pointer"
               >
                 {isFollowed ? (
                   <>
@@ -2036,46 +2143,100 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
           </div>
         </div>
 
-        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-4">
-          <h2 className="text-base font-display font-semibold text-white">
-            Popular Songs
-          </h2>
+        <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-display font-semibold text-white">
+                All Songs by {artist.name}
+              </h2>
+              <p className="text-xs text-neutral-400">
+                {artistTracks.length} tracks available to stream
+              </p>
+            </div>
+            {isLoadingSongs && (
+              <span className="text-xs text-[#FF0000] animate-pulse">
+                Fetching songs...
+              </span>
+            )}
+          </div>
+
           <div className="divide-y divide-neutral-800/70">
-            {artistTracks.map((t, i) => (
-              <div key={t.id} className="py-3 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono tabular-nums text-neutral-500 w-5">
-                    {i + 1}
-                  </span>
-                  <button
-                    type="button"
+            {artistTracks.map((t, i) => {
+              const isLiked = likedTrackIds.includes(t.id);
+              return (
+                <div
+                  key={t.id}
+                  className="group py-3 px-2 rounded-lg hover:bg-neutral-900/60 flex items-center justify-between gap-4 transition-colors"
+                >
+                  <div
                     onClick={() => onPlayTrack(t, artistTracks)}
-                    className="text-sm font-medium text-white hover:text-[#FF0000] text-left cursor-pointer"
+                    className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
                   >
-                    {t.cleanTitle}
-                  </button>
+                    <span className="text-xs font-mono tabular-nums text-neutral-500 w-5 shrink-0 group-hover:hidden">
+                      {i + 1}
+                    </span>
+                    <Play className="w-4 h-4 text-[#FF0000] hidden group-hover:block shrink-0 fill-current" />
+                    <ArtworkTile
+                      title={t.cleanTitle}
+                      thumbnailUrl={t.thumbnailUrl}
+                      size="sm"
+                      rounded="md"
+                      className="w-10 h-10 shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-white group-hover:text-[#FF0000] truncate transition-colors">
+                        {t.cleanTitle}
+                      </p>
+                      <p className="text-xs text-neutral-400 truncate">
+                        {t.albumName || 'Single'} · {t.releaseYear}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleLike(t.id);
+                      }}
+                      className="text-neutral-400 hover:text-[#FF0000] transition-colors p-1"
+                    >
+                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''}`} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddToQueue(t);
+                      }}
+                      className="text-neutral-400 hover:text-white transition-colors p-1"
+                    >
+                      <ListPlus className="w-4 h-4" />
+                    </button>
+                    <span className="text-xs font-mono tabular-nums text-neutral-400 w-12 text-right">
+                      {formatDuration(t.duration)}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-xs font-mono tabular-nums text-neutral-400">
-                  {formatDuration(t.duration)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {artistAlbums.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-base font-display font-semibold text-white">Albums</h2>
+            <h2 className="text-base font-display font-semibold text-white">Albums &amp; Soundtracks</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {artistAlbums.map((al) => (
                 <button
                   key={al.id}
                   type="button"
                   onClick={() => onNavigate(`/album/${al.id}`)}
-                  className="p-3.5 rounded-xl bg-[#0A0A0A] border border-neutral-800 text-left space-y-2 hover:border-[#830000] cursor-pointer"
+                  className="p-3.5 rounded-xl bg-[#0A0A0A] border border-neutral-800 text-left space-y-2 hover:border-[#830000] cursor-pointer group transition-all"
                 >
                   <ArtworkTile title={al.title} thumbnailUrl={al.coverUrl} accentHex={al.accentHex} className="w-full aspect-square" />
-                  <p className="text-sm font-semibold text-white truncate">{al.title}</p>
+                  <p className="text-sm font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">{al.title}</p>
                   <p className="text-xs text-neutral-400">{al.releaseYear}</p>
                 </button>
               ))}
@@ -2086,46 +2247,110 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
     );
   }
 
-  // Album detail
-  const album = albums.find((a) => a.id === entityId) || albums[0];
-  const albumTracks = tracks.filter((t) => album.trackIds.includes(t.id) && t.visibleInCatalog);
+  // Album & Movie Soundtrack detail
+  const foundAlbum = albums.find((a) => a.id === entityId);
+  const album = foundAlbum || {
+    id: entityId,
+    title: entityId.replace(/^alb-/, '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    artistId: 'art-various',
+    artistName: 'Soundtrack / Various Artists',
+    releaseYear: 2024,
+    language: 'Hindi' as const,
+    genre: 'Soundtrack',
+    trackIds: [],
+    sourceType: 'API_CONTRACT_SAMPLE' as const,
+    accentHex: '#BC0202',
+    coverUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=80',
+  };
+
+  const [albumTracks, setAlbumTracks] = useState<Track[]>(() => {
+    return tracks.filter(
+      (t) =>
+        t.visibleInCatalog &&
+        (album.trackIds.includes(t.id) ||
+          t.albumId === album.id ||
+          t.albumName.toLowerCase().includes(album.title.toLowerCase()))
+    );
+  });
+  const [isLoadingAlbumSongs, setIsLoadingAlbumSongs] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoadingAlbumSongs(true);
+
+    fetchSearchTracks(album.title)
+      .then((fetched) => {
+        if (!isMounted) return;
+        setIsLoadingAlbumSongs(false);
+        if (fetched && fetched.length > 0) {
+          setAlbumTracks((prev) => {
+            const map = new Map<string, Track>();
+            for (const t of prev) map.set(t.id, t);
+            for (const t of fetched) {
+              map.set(t.id, t);
+            }
+            return Array.from(map.values());
+          });
+          onTracksDiscovered?.(fetched);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setIsLoadingAlbumSongs(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [album.id, album.title]);
+
   const isSaved = savedAlbumIds.includes(album.id);
 
   return (
     <div className="space-y-8 pb-8">
       <div className="bg-gradient-to-br from-[#830000]/35 via-[#0A0A0A] to-black border border-neutral-800 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
-        <ArtworkTile title={album.title} thumbnailUrl={album.coverUrl} accentHex={album.accentHex} size="xl" className="w-44 h-44 shadow-2xl" />
-        <div className="space-y-3 flex-1">
-          <p className="text-xs text-neutral-400">
-            Album · {album.language} · {album.releaseYear}
-          </p>
+        <ArtworkTile
+          title={album.title}
+          thumbnailUrl={album.coverUrl}
+          accentHex={album.accentHex}
+          size="xl"
+          className="w-44 h-44 shadow-2xl rounded-xl"
+        />
+        <div className="space-y-3 flex-1 text-center sm:text-left">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#830000]/60 border border-[#BC0202] text-white">
+              🎬 Movie · Soundtrack
+            </span>
+            <span className="text-xs text-neutral-400">
+              {album.language} · {album.releaseYear}
+            </span>
+          </div>
           <h1 className="text-2xl sm:text-4xl font-display font-bold text-white">{album.title}</h1>
           <p className="text-sm text-neutral-300">
-            By{' '}
+            Composed by{' '}
             <button
               type="button"
               onClick={() => onNavigate(`/artist/${album.artistId}`)}
-              className="text-white underline hover:text-[#FF0000] cursor-pointer"
+              className="text-white underline hover:text-[#FF0000] cursor-pointer font-medium"
             >
               {album.artistName}
             </button>{' '}
             · {albumTracks.length} songs
           </p>
-          <div className="flex flex-wrap items-center gap-3 pt-1">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1">
             {albumTracks.length > 0 && (
               <button
                 type="button"
                 onClick={() => onPlayTrack(albumTracks[0], albumTracks)}
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold cursor-pointer shadow-lg transition-transform active:scale-95"
               >
                 <Play className="w-4 h-4 fill-current" />
-                <span>Play Album</span>
+                <span>Play Movie Songs</span>
               </button>
             )}
             <button
               type="button"
               onClick={() => onToggleSaveAlbum(album.id)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-black border border-neutral-800 text-xs font-medium text-white hover:border-[#FF0000] cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black border border-neutral-800 text-xs font-medium text-white hover:border-[#FF0000] cursor-pointer"
             >
               <Check className={`w-4 h-4 ${isSaved ? 'text-[#FF0000]' : 'opacity-40'}`} />
               <span>{isSaved ? 'Saved in Library' : 'Save Album'}</span>
@@ -2134,31 +2359,82 @@ export const EntityDetailView: React.FC<EntityDetailViewProps> = ({
         </div>
       </div>
 
-      <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 space-y-3">
-        <h2 className="text-base font-display font-semibold text-white">Tracklist</h2>
+      <div className="bg-[#0A0A0A] border border-neutral-800 rounded-xl p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-display font-semibold text-white">
+              Movie Songs &amp; Soundtrack ({albumTracks.length})
+            </h2>
+            <p className="text-xs text-neutral-400">
+              All official songs from {album.title}
+            </p>
+          </div>
+          {isLoadingAlbumSongs && (
+            <span className="text-xs text-[#FF0000] animate-pulse">
+              Fetching songs...
+            </span>
+          )}
+        </div>
+
         <div className="divide-y divide-neutral-800/70">
-          {albumTracks.map((t, idx) => (
-            <div key={t.id} className="py-3 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-mono tabular-nums text-neutral-500 w-5">
-                  {idx + 1}
-                </span>
-                <div>
+          {albumTracks.map((t, idx) => {
+            const isLiked = likedTrackIds.includes(t.id);
+            return (
+              <div
+                key={t.id}
+                className="group py-3 px-2 rounded-lg hover:bg-neutral-900/60 flex items-center justify-between gap-4 transition-colors"
+              >
+                <div
+                  onClick={() => onPlayTrack(t, albumTracks)}
+                  className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                >
+                  <span className="text-xs font-mono tabular-nums text-neutral-500 w-5 shrink-0 group-hover:hidden">
+                    {idx + 1}
+                  </span>
+                  <Play className="w-4 h-4 text-[#FF0000] hidden group-hover:block shrink-0 fill-current" />
+                  <ArtworkTile
+                    title={t.cleanTitle}
+                    thumbnailUrl={t.thumbnailUrl}
+                    size="sm"
+                    rounded="md"
+                    className="w-10 h-10 shrink-0"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-white group-hover:text-[#FF0000] truncate transition-colors">
+                      {t.cleanTitle}
+                    </p>
+                    <p className="text-xs text-neutral-400 truncate">{t.artistName}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
                   <button
                     type="button"
-                    onClick={() => onPlayTrack(t, albumTracks)}
-                    className="text-sm font-medium text-white hover:text-[#FF0000] text-left cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleLike(t.id);
+                    }}
+                    className="text-neutral-400 hover:text-[#FF0000] transition-colors p-1"
                   >
-                    {t.cleanTitle}
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''}`} />
                   </button>
-                  <p className="text-xs text-neutral-400">{t.artistName}</p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToQueue(t);
+                    }}
+                    className="text-neutral-400 hover:text-white transition-colors p-1"
+                  >
+                    <ListPlus className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs font-mono tabular-nums text-neutral-400 w-12 text-right">
+                    {formatDuration(t.duration)}
+                  </span>
                 </div>
               </div>
-              <span className="text-xs font-mono tabular-nums text-neutral-400">
-                {formatDuration(t.duration)}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
@@ -2678,9 +2954,8 @@ export const LibraryAndPlaylistsView: React.FC<LibraryAndPlaylistsViewProps> = (
                   <button
                     type="button"
                     onClick={() => onToggleLike(t.id)}
-                    className={`p-1 rounded cursor-pointer transition-colors ${
-                      isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
-                    }`}
+                    className={`p-1 rounded cursor-pointer transition-colors ${isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                      }`}
                     aria-label={isLiked ? 'Unlike song' : 'Like song'}
                   >
                     <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
@@ -2801,8 +3076,15 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
       {/* Profile Header Card */}
       <div className="bg-[#0A0A0A] border border-neutral-800 rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#830000] via-[#BC0202] to-[#FF0000] flex items-center justify-center text-white text-2xl font-bold font-display shadow-[0_0_20px_rgba(255,0,0,0.4)] shrink-0">
-            {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U'}
+          <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#830000] via-[#BC0202] to-[#FF0000] flex items-center justify-center text-white text-2xl font-bold font-display shadow-[0_0_20px_rgba(255,0,0,0.4)] shrink-0 border border-[#FF0000]/40">
+            <img
+              src={currentUser.avatarUrl || `https://unavatar.io/${encodeURIComponent(currentUser.email)}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.displayName || currentUser.email)}&backgroundColor=bc0202,830000,000000&textColor=ffffff`}
+              alt={currentUser.displayName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.displayName || currentUser.email)}&backgroundColor=bc0202,830000,000000&textColor=ffffff`;
+              }}
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -2845,11 +3127,10 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${
-                isActive
-                  ? 'bg-[#BC0202] text-white shadow-[0_0_15px_rgba(255,0,0,0.35)]'
-                  : 'bg-[#0A0A0A] hover:bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
-              }`}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer ${isActive
+                ? 'bg-[#BC0202] text-white shadow-[0_0_15px_rgba(255,0,0,0.35)]'
+                : 'bg-[#0A0A0A] hover:bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                }`}
             >
               <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-neutral-400'}`} />
               <span>{tab.label}</span>
@@ -2948,11 +3229,10 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
                   key={tf}
                   type="button"
                   onClick={() => setStatsTimeframe(tf)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize cursor-pointer transition-colors ${
-                    statsTimeframe === tf
-                      ? 'bg-[#BC0202] text-white'
-                      : 'bg-[#0A0A0A] text-neutral-400 border border-neutral-800'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize cursor-pointer transition-colors ${statsTimeframe === tf
+                    ? 'bg-[#BC0202] text-white'
+                    : 'bg-[#0A0A0A] text-neutral-400 border border-neutral-800'
+                    }`}
                 >
                   {tf}
                 </button>
@@ -3217,11 +3497,10 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
                   key={t.id}
                   type="button"
                   onClick={() => onSetThemeMode(t.id)}
-                  className={`p-4 rounded-xl border text-left text-xs font-medium transition-colors cursor-pointer ${
-                    themeMode === t.id
-                      ? 'bg-[#830000]/35 border-[#FF0000] text-white shadow-[0_0_15px_rgba(255,0,0,0.25)]'
-                      : 'bg-black border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700'
-                  }`}
+                  className={`p-4 rounded-xl border text-left text-xs font-medium transition-colors cursor-pointer ${themeMode === t.id
+                    ? 'bg-[#830000]/35 border-[#FF0000] text-white shadow-[0_0_15px_rgba(255,0,0,0.25)]'
+                    : 'bg-black border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700'
+                    }`}
                 >
                   <p className="font-semibold text-sm text-white">{t.label}</p>
                   <p className="text-[11px] text-neutral-400 mt-1">{t.desc}</p>
