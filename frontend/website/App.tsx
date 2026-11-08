@@ -825,8 +825,8 @@ export function MusicMineWebsiteApp() {
     themeMode === 'amoled'
       ? 'bg-black text-white'
       : themeMode === 'dark'
-      ? 'bg-[#0C0A0A] text-white'
-      : 'bg-neutral-950 text-white';
+        ? 'bg-[#0C0A0A] text-white'
+        : 'bg-neutral-950 text-white';
 
   return (
     <div className={`min-h-screen h-screen flex flex-col overflow-hidden ${shellBgClass}`}>
@@ -905,9 +905,9 @@ export function MusicMineWebsiteApp() {
             ) : null}
           </form>
 
-          {/* Live Search Quick Results Dropdown (AMOLED Glass) */}
+          {/* Live Search Quick Results Dropdown (Desktop AMOLED Glass) */}
           {headerSearchFocused && headerSearchQuery.trim().length > 0 && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-[#0A0A0A]/85 backdrop-blur-2xl border border-neutral-800/80 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] ring-1 ring-white/10 overflow-hidden z-50 max-h-[75vh] flex flex-col">
+            <div className="hidden md:flex absolute left-0 right-0 top-full mt-2 bg-[#0A0A0A]/85 backdrop-blur-2xl border border-neutral-800/80 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] ring-1 ring-white/10 overflow-hidden z-50 max-h-[75vh] flex-col">
               <div className="p-3 border-b border-neutral-800/80 bg-black/40 backdrop-blur-md flex items-center justify-between text-xs text-neutral-400">
                 <span>
                   {isSearchingHeader
@@ -944,11 +944,10 @@ export function MusicMineWebsiteApp() {
                         className="pt-1.5 first:pt-0"
                       >
                         <div
-                          className={`p-2 rounded-xl flex items-center justify-between gap-3 transition-colors ${
-                            isCurrent
+                          className={`p-2 rounded-xl flex items-center justify-between gap-3 transition-colors ${isCurrent
                               ? 'bg-[#830000]/30 border border-[#FF0000]/40'
                               : 'hover:bg-neutral-900 border border-transparent'
-                          }`}
+                            }`}
                         >
                           <button
                             type="button"
@@ -1021,10 +1020,10 @@ export function MusicMineWebsiteApp() {
             </div>
           )}
 
-          {/* Focused & Empty Input Dropdown: Real-Time Trending Searches & Popular Artists (AMOLED Glass) */}
+          {/* Focused & Empty Input Dropdown: Real-Time Trending Searches & Popular Artists (Desktop AMOLED Glass) */}
           {headerSearchFocused && !headerSearchQuery.trim() && (
-            <div className="absolute left-0 right-0 top-full mt-2 bg-[#0A0A0A]/85 backdrop-blur-2xl border border-neutral-800/80 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] ring-1 ring-white/10 overflow-hidden z-50 max-h-[82vh] flex flex-col divide-y divide-neutral-800/70">
-              
+            <div className="hidden md:flex absolute left-0 right-0 top-full mt-2 bg-[#0A0A0A]/85 backdrop-blur-2xl border border-neutral-800/80 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.85)] ring-1 ring-white/10 overflow-hidden z-50 max-h-[82vh] flex-col divide-y divide-neutral-800/70">
+
               {/* Header Title with Live Badge */}
               <div className="px-4 py-2.5 bg-gradient-to-r from-[#1f0606] via-[#100808] to-[#0A0A0A] flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -1041,7 +1040,7 @@ export function MusicMineWebsiteApp() {
 
               {/* Scrollable Container */}
               <div className="overflow-y-auto p-3 space-y-4 max-h-[70vh]">
-                
+
                 {/* 0. Recent Searches */}
                 {recentSearches.length > 0 && (
                   <div>
@@ -1285,6 +1284,387 @@ export function MusicMineWebsiteApp() {
         </div>
       </header>
 
+      {/* Mobile Full-Screen Live Search Experience (Full Live PC View on Mobile) */}
+      {headerSearchFocused && (
+        <div className="md:hidden fixed inset-0 z-[100] bg-black flex flex-col h-full w-full overflow-hidden animate-in fade-in duration-150">
+          {/* Top Search Bar Header */}
+          <div className="h-16 px-3 bg-[#0A0A0A] border-b border-neutral-800/80 flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setHeaderSearchFocused(false)}
+              aria-label="Back to main view"
+              className="p-2 text-neutral-400 hover:text-white rounded-full hover:bg-neutral-900 transition-colors cursor-pointer shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5 text-white" />
+            </button>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (headerSearchQuery.trim()) {
+                  saveRecentSearch(headerSearchQuery);
+                }
+                setHeaderSearchFocused(false);
+                setRoute('/search');
+              }}
+              className="flex-1 relative flex items-center"
+            >
+              <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 pointer-events-none" />
+              <input
+                type="search"
+                autoFocus
+                value={headerSearchQuery}
+                onChange={(e) => {
+                  setHeaderSearchQuery(e.target.value);
+                  setHeaderSearchFocused(true);
+                }}
+                placeholder="Search songs, artists, soundtracks..."
+                aria-label="Search music catalog"
+                className="w-full pl-10 pr-9 py-2.5 rounded-full bg-neutral-900 border border-neutral-800 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-sm text-white placeholder-neutral-400"
+              />
+              {isSearchingHeader ? (
+                <Loader2 className="w-4 h-4 text-[#FF0000] animate-spin absolute right-3" />
+              ) : headerSearchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHeaderSearchQuery('');
+                    setHeaderSearchResults([]);
+                  }}
+                  aria-label="Clear search"
+                  className="absolute right-3 text-neutral-400 hover:text-white cursor-pointer p-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              ) : null}
+            </form>
+          </div>
+
+          {/* Scrollable Mobile Body */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6 pb-28">
+            {/* If user is typing: Live Quick Results */}
+            {headerSearchQuery.trim().length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-800/80">
+                  <span className="text-xs font-semibold text-neutral-300">
+                    {isSearchingHeader
+                      ? `Searching for "${headerSearchQuery}"...`
+                      : `Results for "${headerSearchQuery}" (${headerSearchResults.length})`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (headerSearchQuery.trim()) {
+                        saveRecentSearch(headerSearchQuery);
+                      }
+                      setHeaderSearchFocused(false);
+                      setRoute('/search');
+                    }}
+                    className="text-xs font-semibold text-[#FF0000] hover:underline cursor-pointer"
+                  >
+                    View All →
+                  </button>
+                </div>
+
+                {headerSearchResults.length === 0 && !isSearchingHeader ? (
+                  <div className="py-12 text-center text-sm text-neutral-500 space-y-3">
+                    <p>No songs found for "{headerSearchQuery}".</p>
+                    <button
+                      type="button"
+                      onClick={() => setHeaderSearchQuery('')}
+                      className="px-4 py-1.5 rounded-full bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 hover:text-white"
+                    >
+                      Clear search
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {headerSearchResults.map((track) => {
+                      const isCurrent = currentTrack?.id === track.id;
+                      const isTrackPlaying = isCurrent && engineState.isPlaying;
+                      return (
+                        <div
+                          key={`mob-srch-${track.id}`}
+                          className={`p-2.5 rounded-xl flex items-center justify-between gap-3 transition-colors ${
+                            isCurrent
+                              ? 'bg-[#830000]/30 border border-[#FF0000]/40'
+                              : 'bg-neutral-950/80 hover:bg-neutral-900 border border-neutral-800/70'
+                          }`}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (headerSearchQuery.trim()) {
+                                saveRecentSearch(headerSearchQuery);
+                              }
+                              handlePlayTrack(track, headerSearchResults);
+                              setHeaderSearchFocused(false);
+                            }}
+                            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer"
+                          >
+                            <ArtworkTile
+                              title={track.cleanTitle}
+                              thumbnailUrl={track.thumbnailUrl}
+                              size="sm"
+                              isPlaying={isTrackPlaying}
+                              className="w-12 h-12 shrink-0 rounded-lg"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-white truncate">
+                                {track.cleanTitle}
+                              </p>
+                              <p className="text-xs text-neutral-400 truncate mt-0.5">
+                                {track.artistName} · {track.language}
+                              </p>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (headerSearchQuery.trim()) {
+                                saveRecentSearch(headerSearchQuery);
+                              }
+                              handlePlayTrack(track, headerSearchResults);
+                              setHeaderSearchFocused(false);
+                            }}
+                            aria-label={`Play ${track.cleanTitle}`}
+                            className="w-9 h-9 rounded-full bg-[#BC0202] hover:bg-[#FF0000] text-white flex items-center justify-center shrink-0 shadow transition-colors cursor-pointer"
+                          >
+                            {isTrackPlaying ? (
+                              <Pause className="w-4 h-4 fill-current" />
+                            ) : (
+                              <Play className="w-4 h-4 fill-current ml-0.5" />
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (headerSearchQuery.trim()) {
+                        saveRecentSearch(headerSearchQuery);
+                      }
+                      setHeaderSearchFocused(false);
+                      setRoute('/search');
+                    }}
+                    className="w-full py-3 rounded-xl bg-neutral-900 hover:bg-[#830000]/40 text-xs text-neutral-200 hover:text-white font-medium border border-neutral-800 transition-colors cursor-pointer text-center"
+                  >
+                    Open Full Search Catalog Page →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Empty Query: Live PC-style suggestions on Mobile */
+              <div className="space-y-6">
+                {/* 1. Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2.5">
+                      <span className="text-xs font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <History className="w-3.5 h-3.5 text-[#FF0000]" />
+                        Recent Searches
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearRecentSearches}
+                        className="text-xs text-neutral-500 hover:text-[#FF0000] transition-colors cursor-pointer"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {recentSearches.map((term) => (
+                        <div
+                          key={`mob-recent-${term}`}
+                          className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 hover:text-white transition-all cursor-pointer shadow-sm"
+                          onClick={() => {
+                            setHeaderSearchQuery(term);
+                            saveRecentSearch(term);
+                            setHeaderSearchFocused(true);
+                          }}
+                        >
+                          <History className="w-3 h-3 text-neutral-500 group-hover:text-[#FF0000] shrink-0" />
+                          <span className="font-medium truncate max-w-[200px]">{term}</span>
+                          <button
+                            type="button"
+                            onClick={(e) => removeRecentSearch(term, e)}
+                            aria-label={`Remove ${term}`}
+                            className="text-neutral-500 hover:text-white p-0.5 rounded"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Trending Searches (Live Full Grid) */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-[#FF0000]" />
+                      Trending Searches
+                    </span>
+                    <span className="text-[10px] text-neutral-400 font-mono flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#FF0000] animate-pulse" />
+                      Live #1 Charts
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {trendingSearches.map((item, idx) => (
+                      <button
+                        key={`mob-trend-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          setHeaderSearchQuery(item.term);
+                          saveRecentSearch(item.term);
+                          setHeaderSearchFocused(true);
+                        }}
+                        className="p-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-800/80 hover:border-[#BC0202]/60 text-left transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-2">
+                          <span className="text-xs font-mono text-neutral-500 font-bold group-hover:text-neutral-300">
+                            #{idx + 1}
+                          </span>
+                          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25">
+                            {item.tag}
+                          </span>
+                        </div>
+                        <p className="text-sm font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">
+                          {item.term}
+                        </p>
+                        <p className="text-[11px] text-neutral-400 truncate mt-0.5">
+                          {item.subtitle}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Popular Artists */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      Popular Artists
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHeaderSearchFocused(false);
+                        setRoute('/search');
+                      }}
+                      className="text-xs text-[#FF0000] hover:underline cursor-pointer font-medium"
+                    >
+                      View All →
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {popularArtists.map((artist) => {
+                      const isFollowed = followedArtistIds.includes(artist.id);
+                      const artistTrack =
+                        tracks.find(
+                          (t) =>
+                            t.artistId === artist.id ||
+                            t.artistName.toLowerCase().includes(artist.name.toLowerCase())
+                        ) || tracks[0];
+                      const isCurrent = currentTrack?.id === artistTrack?.id;
+                      const isPlayingArtistTrack = isCurrent && engineState.isPlaying;
+
+                      return (
+                        <div
+                          key={`mob-pop-art-${artist.id}`}
+                          className="p-2.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-800/90 border border-neutral-800/70 flex items-center justify-between gap-3 transition-colors"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHeaderSearchFocused(false);
+                              setRoute(`/artist/${artist.id}` as RoutePath);
+                            }}
+                            className="flex items-center gap-3 min-w-0 flex-1 text-left cursor-pointer"
+                          >
+                            <div className="relative w-11 h-11 rounded-full overflow-hidden bg-neutral-800 shrink-0 border border-neutral-700/60">
+                              {artist.avatarUrl ? (
+                                <img
+                                  src={artist.avatarUrl}
+                                  alt={artist.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center font-bold text-sm text-white bg-[#830000]">
+                                  {artist.name[0]}
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-semibold text-white truncate">
+                                  {artist.name}
+                                </p>
+                                {isFollowed && (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#FF0000]/20 text-[#ff7272] border border-[#FF0000]/30 font-mono">
+                                    Following
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-neutral-400 truncate mt-0.5">
+                                {artist.monthlyListenersLabel || artist.genres.slice(0, 2).join(' · ')}
+                              </p>
+                            </div>
+                          </button>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setHeaderSearchQuery(artist.name);
+                                saveRecentSearch(artist.name);
+                                setHeaderSearchFocused(true);
+                              }}
+                              className="px-2.5 py-1.5 rounded-lg text-xs text-neutral-300 bg-neutral-800 hover:bg-neutral-700 transition-colors cursor-pointer"
+                            >
+                              Search
+                            </button>
+                            {artistTrack && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handlePlayTrack(artistTrack, tracks);
+                                  setHeaderSearchFocused(false);
+                                }}
+                                aria-label={`Play top song by ${artist.name}`}
+                                className="w-8 h-8 rounded-full bg-[#BC0202] hover:bg-[#FF0000] text-white flex items-center justify-center shadow transition-colors cursor-pointer"
+                              >
+                                {isPlayingArtistTrack ? (
+                                  <Pause className="w-3.5 h-3.5 fill-current" />
+                                ) : (
+                                  <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Main Middle Layout: Desktop Sidebar + Scrollable Content Viewport */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
         {/* Desktop Sidebar Navigation */}
@@ -1300,11 +1680,10 @@ export function MusicMineWebsiteApp() {
               <button
                 type="button"
                 onClick={() => setRoute('/')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  route === '/'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/'
                     ? 'bg-[#BC0202] text-white'
                     : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                }`}
+                  }`}
               >
                 <Home className="w-4 h-4 shrink-0" />
                 <span>Home</span>
@@ -1312,11 +1691,10 @@ export function MusicMineWebsiteApp() {
               <button
                 type="button"
                 onClick={() => setRoute('/search')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  route === '/search'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/search'
                     ? 'bg-[#BC0202] text-white'
                     : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                }`}
+                  }`}
               >
                 <Search className="w-4 h-4 shrink-0" />
                 <span>Search</span>
@@ -1344,11 +1722,10 @@ export function MusicMineWebsiteApp() {
                     key={item.path}
                     type="button"
                     onClick={() => setRoute(item.path)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                      active
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${active
                         ? 'bg-[#BC0202] text-white'
                         : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     <span className="truncate">{item.label}</span>
@@ -1369,11 +1746,10 @@ export function MusicMineWebsiteApp() {
                     key={pl.id}
                     type="button"
                     onClick={() => setRoute(plPath)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
-                      active
+                    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer ${active
                         ? 'bg-[#830000]/40 text-[#FF0000] font-semibold'
                         : 'text-neutral-400 hover:bg-neutral-900 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <FolderHeart className="w-3.5 h-3.5 shrink-0 text-[#BC0202]" />
                     <span className="truncate">{pl.name}</span>
@@ -1389,11 +1765,10 @@ export function MusicMineWebsiteApp() {
               <button
                 type="button"
                 onClick={() => setRoute('/profile')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  route === '/profile'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/profile'
                     ? 'bg-[#BC0202] text-white'
                     : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                }`}
+                  }`}
               >
                 <User className="w-4 h-4 shrink-0" />
                 <span>Profile</span>
@@ -1401,11 +1776,10 @@ export function MusicMineWebsiteApp() {
               <button
                 type="button"
                 onClick={() => setRoute('/settings')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  route === '/settings'
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route === '/settings'
                     ? 'bg-[#BC0202] text-white'
                     : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                }`}
+                  }`}
               >
                 <Settings className="w-4 h-4 shrink-0" />
                 <span>Settings</span>
@@ -1413,11 +1787,10 @@ export function MusicMineWebsiteApp() {
               <button
                 type="button"
                 onClick={() => setRoute('/admin')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  route.startsWith('/admin')
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route.startsWith('/admin')
                     ? 'bg-[#BC0202] text-white'
                     : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                }`}
+                  }`}
               >
                 <Shield className="w-4 h-4 shrink-0 text-[#FF0000]" />
                 <span>Admin</span>
@@ -1595,32 +1968,32 @@ export function MusicMineWebsiteApp() {
               route === '/library/albums' ||
               route === '/playlists' ||
               route.startsWith('/playlist/')) && (
-              <LibraryAndPlaylistsView
-                route={route}
-                currentUser={currentUser}
-                tracks={tracks}
-                albums={albums}
-                artists={artists}
-                likedTrackIds={likedTrackIds}
-                savedAlbumIds={savedAlbumIds}
-                followedArtistIds={followedArtistIds}
-                history={history}
-                playlists={playlists}
-                onPlayTrack={handlePlayTrack}
-                onToggleLike={handleToggleLike}
-                onClearHistory={() => {
-                  setHistory([]);
-                  notify('Cleared listening history');
-                }}
-                onCreatePlaylist={handleCreatePlaylist}
-                onRenamePlaylist={handleRenamePlaylist}
-                onDeletePlaylist={handleDeletePlaylist}
-                onRemoveTrackFromPlaylist={handleRemoveTrackFromPlaylist}
-                onMovePlaylistTrack={handleMovePlaylistTrack}
-                onNavigate={setRoute}
-                onNotify={notify}
-              />
-            )}
+                <LibraryAndPlaylistsView
+                  route={route}
+                  currentUser={currentUser}
+                  tracks={tracks}
+                  albums={albums}
+                  artists={artists}
+                  likedTrackIds={likedTrackIds}
+                  savedAlbumIds={savedAlbumIds}
+                  followedArtistIds={followedArtistIds}
+                  history={history}
+                  playlists={playlists}
+                  onPlayTrack={handlePlayTrack}
+                  onToggleLike={handleToggleLike}
+                  onClearHistory={() => {
+                    setHistory([]);
+                    notify('Cleared listening history');
+                  }}
+                  onCreatePlaylist={handleCreatePlaylist}
+                  onRenamePlaylist={handleRenamePlaylist}
+                  onDeletePlaylist={handleDeletePlaylist}
+                  onRemoveTrackFromPlaylist={handleRemoveTrackFromPlaylist}
+                  onMovePlaylistTrack={handleMovePlaylistTrack}
+                  onNavigate={setRoute}
+                  onNotify={notify}
+                />
+              )}
 
             {(route === '/profile' || route === '/settings' || route === '/stats') && (
               <ProfileSettingsStatsView
@@ -1818,17 +2191,20 @@ export function MusicMineWebsiteApp() {
             <button
               key={tab.path}
               type="button"
-              onClick={() => setRoute(tab.path)}
-              className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
-                isActive ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
-              }`}
+              onClick={() => {
+                if (tab.path === '/search') {
+                  setHeaderSearchFocused(true);
+                }
+                setRoute(tab.path);
+              }}
+              className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${isActive ? 'text-[#FF0000]' : 'text-neutral-400 hover:text-white'
+                }`}
             >
               <div
-                className={`relative flex items-center justify-center p-1 rounded-full transition-all ${
-                  isActive
+                className={`relative flex items-center justify-center p-1 rounded-full transition-all ${isActive
                     ? 'bg-[#FF0000]/10 shadow-[inset_0_0_8px_rgba(255,0,0,0.45)] ring-1 ring-[#FF0000]/30'
                     : ''
-                }`}
+                  }`}
               >
                 <Icon className={`w-4 h-4 transition-transform ${isActive ? 'scale-105' : ''}`} />
               </div>
@@ -1859,11 +2235,10 @@ export function MusicMineWebsiteApp() {
           <div
             className="h-full bg-gradient-to-r from-[#BC0202] via-[#FF0000] to-[#FF3B3B] shadow-[0_0_8px_rgba(255,0,0,0.75)] transition-all duration-150 ease-out"
             style={{
-              width: `${
-                engineState.duration > 0
+              width: `${engineState.duration > 0
                   ? Math.min(100, Math.max(0, (engineState.currentTime / engineState.duration) * 100))
                   : 0
-              }%`,
+                }%`,
             }}
           />
         </div>
