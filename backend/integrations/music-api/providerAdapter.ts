@@ -316,7 +316,7 @@ async function fetchNazriyaSearch(query: string, timeoutMs = 1500): Promise<Trac
     clearTimeout(timeout);
 
     if (response.status === 401 || response.status === 403 || response.status === 429) {
-      provisionFreshNazriyaKey().catch(() => {});
+      provisionFreshNazriyaKey().catch(() => { });
       return [];
     }
 
@@ -480,8 +480,8 @@ export async function resolveRealAudioBuffer(params: {
         params.query && params.query.startsWith('http')
           ? params.query
           : params.providerId && !params.providerId.startsWith('svn-') && params.providerId.length === 11
-          ? `https://youtu.be/${params.providerId}`
-          : `${params.title || ''} ${params.artist || ''}`.trim() || params.query || 'aaj ki raat';
+            ? `https://youtu.be/${params.providerId}`
+            : `${params.title || ''} ${params.artist || ''}`.trim() || params.query || 'aaj ki raat';
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 12000);

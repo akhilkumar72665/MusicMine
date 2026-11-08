@@ -416,9 +416,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         className="p-2.5 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
                       >
                         <Heart
-                          className={`w-5 h-5 ${
-                            isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''
-                          }`}
+                          className={`w-5 h-5 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''
+                            }`}
                         />
                       </button>
                     </div>
@@ -431,11 +430,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           type="button"
                           onClick={() => setHeroSlideIndex(i)}
                           aria-label={`Slide ${i + 1}`}
-                          className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
-                            i === safeHeroIndex
+                          className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${i === safeHeroIndex
                               ? 'w-7 bg-white shadow-[0_0_8px_white]'
                               : 'w-3.5 bg-neutral-700 hover:bg-neutral-500'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -500,11 +498,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               key={cat}
               type="button"
               onClick={() => setActiveCategory(activeCategory === cat ? 'All' : cat)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-                isActive
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${isActive
                   ? 'bg-white text-black shadow'
                   : 'bg-[#121212] hover:bg-[#1a1a1a] text-neutral-300 hover:text-white border border-neutral-800/80'
-              }`}
+                }`}
             >
               {cat}
             </button>
@@ -532,11 +529,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               return (
                 <div
                   key={`quick-${track.id}`}
-                  className={`mm-spotify-tile group relative flex items-center justify-between gap-3 rounded-xl overflow-hidden border pr-3 ${
-                    isCurrent
+                  className={`mm-spotify-tile group relative flex items-center justify-between gap-3 rounded-xl overflow-hidden border pr-3 ${isCurrent
                       ? 'bg-gradient-to-r from-[#830000]/45 via-[#140505] to-[#0A0A0A] border-[#FF0000]'
                       : 'bg-[#0D0D0D]/95 hover:bg-[#171717] border-neutral-800/90 hover:border-[#BC0202]/70'
-                  }`}
+                    }`}
                 >
                   <button
                     type="button"
@@ -566,11 +562,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       type="button"
                       onClick={() => onPlayTrack(track, filteredTracks)}
                       aria-label={isCurrent && isPlaying ? `Pause ${track.cleanTitle}` : `Play ${track.cleanTitle}`}
-                      className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all cursor-pointer ${
-                        isCurrent && isPlaying
+                      className={`w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all cursor-pointer ${isCurrent && isPlaying
                           ? 'bg-[#FF0000] text-white scale-100'
                           : 'bg-[#BC0202] group-hover:bg-[#FF0000] text-white opacity-90 group-hover:opacity-100'
-                      }`}
+                        }`}
                     >
                       {isCurrent && isPlaying ? (
                         <Pause className="w-4 h-4 fill-current" />
@@ -615,17 +610,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
               return (
                 <div
                   key={`chart-${track.id}`}
-                  className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${
-                    isCurrent
+                  className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${isCurrent
                       ? 'bg-gradient-to-r from-[#830000]/45 via-[#120404] to-black border-[#FF0000]'
                       : 'bg-[#0A0A0A] hover:bg-[#121212] border-neutral-800/90 hover:border-neutral-700'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1">
                     <span
-                      className={`text-lg sm:text-xl font-display font-bold font-mono tabular-nums w-7 text-center shrink-0 ${
-                        idx < 3 ? 'text-[#FF0000]' : 'text-neutral-500'
-                      }`}
+                      className={`text-lg sm:text-xl font-display font-bold font-mono tabular-nums w-7 text-center shrink-0 ${idx < 3 ? 'text-[#FF0000]' : 'text-neutral-500'
+                        }`}
                     >
                       {rankLabel}
                     </span>
@@ -644,9 +637,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       />
                       <div className="min-w-0 flex-1">
                         <p
-                          className={`text-sm font-semibold truncate ${
-                            isCurrent ? 'text-[#FF0000]' : 'text-white'
-                          }`}
+                          className={`text-sm font-semibold truncate ${isCurrent ? 'text-[#FF0000]' : 'text-white'
+                            }`}
                         >
                           {track.cleanTitle}
                         </p>
@@ -665,9 +657,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       type="button"
                       onClick={() => onToggleLike(track.id)}
                       aria-label={isLiked ? 'Unlike' : 'Like'}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                        isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
-                      }`}
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                        }`}
                     >
                       <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000]' : ''}`} />
                     </button>
@@ -729,11 +720,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       return (
                         <div
                           key={`${track.id}-slide-${slideIdx}`}
-                          className={`group w-60 shrink-0 rounded-xl p-3 border transition-all duration-300 ${
-                            isCurrent
+                          className={`group w-60 shrink-0 rounded-xl p-3 border transition-all duration-300 ${isCurrent
                               ? 'bg-gradient-to-b from-[#830000]/45 to-[#0D0D0D] border-[#FF0000]'
                               : 'bg-[#0A0A0A] hover:bg-gradient-to-b hover:from-[#830000]/25 hover:to-[#0D0D0D] border-neutral-800 hover:border-[#BC0202]'
-                          }`}
+                            }`}
                         >
                           <div className="relative">
                             <button
@@ -782,9 +772,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                               type="button"
                               onClick={() => onToggleLike(track.id)}
                               aria-label={isLiked ? 'Unlike' : 'Like'}
-                              className={`p-1.5 rounded-lg transition-colors shrink-0 cursor-pointer ${
-                                isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
-                              }`}
+                              className={`p-1.5 rounded-lg transition-colors shrink-0 cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                                }`}
                             >
                               <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000]' : ''}`} />
                             </button>
@@ -804,11 +793,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   return (
                     <div
                       key={track.id}
-                      className={`group relative rounded-xl p-3.5 border transition-colors flex items-center gap-3.5 ${
-                        isCurrent
+                      className={`group relative rounded-xl p-3.5 border transition-colors flex items-center gap-3.5 ${isCurrent
                           ? 'bg-gradient-to-r from-[#830000]/35 to-[#0D0D0D] border-[#BC0202]'
                           : 'bg-[#0A0A0A] hover:bg-gradient-to-r hover:from-[#830000]/20 hover:to-[#0D0D0D] border-neutral-800/90'
-                      }`}
+                        }`}
                     >
                       <button
                         type="button"
@@ -866,9 +854,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           type="button"
                           onClick={() => onToggleLike(track.id)}
                           aria-label={isLiked ? 'Unlike' : 'Like'}
-                          className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                            isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
-                          }`}
+                          className={`p-2 rounded-lg transition-colors cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                            }`}
                         >
                           <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000]' : ''}`} />
                         </button>
@@ -1371,11 +1358,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
               key={sug}
               type="button"
               onClick={() => setQuery(sug)}
-              className={`px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
-                query.toLowerCase() === sug.toLowerCase()
+              className={`px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${query.toLowerCase() === sug.toLowerCase()
                   ? 'bg-[#830000]/40 border-[#FF0000] text-white'
                   : 'bg-black border-neutral-800 text-neutral-300 hover:border-neutral-700'
-              }`}
+                }`}
             >
               {sug}
             </button>
@@ -1411,11 +1397,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedGenre(cat.id)}
-                  className={`group px-3.5 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-2 border shadow-sm ${
-                    isActive
+                  className={`group px-3.5 py-2 rounded-xl text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer flex items-center gap-2 border shadow-sm ${isActive
                       ? 'bg-[#BC0202] text-white border-[#FF0000] shadow-[0_0_14px_rgba(255,0,0,0.4)] ring-1 ring-[#FF0000]/60'
                       : 'bg-[#121212] text-neutral-300 hover:text-white border-neutral-800 hover:border-neutral-700 hover:bg-[#181818]'
-                  }`}
+                    }`}
                 >
                   {cat.icon === 'romantic' && (
                     <Heart className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'fill-white text-white' : 'fill-rose-500/30 text-rose-400'}`} />
@@ -1443,11 +1428,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   )}
                   <span>{cat.label}</span>
                   <span
-                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                      isActive
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${isActive
                         ? 'bg-black/35 text-white'
                         : 'bg-neutral-800 text-neutral-400 group-hover:text-neutral-200'
-                    }`}
+                      }`}
                   >
                     {count}
                   </span>
@@ -1484,11 +1468,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                       key={`card-${cat.id}`}
                       type="button"
                       onClick={() => setSelectedGenre(cat.id)}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20 bg-gradient-to-br ${cat.gradient} ${
-                        isSelected
+                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20 bg-gradient-to-br ${cat.gradient} ${isSelected
                           ? 'border-[#FF0000] ring-1 ring-[#FF0000]/50 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
                           : 'border-neutral-800/80 hover:border-neutral-700 hover:scale-[1.01]'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-white flex items-center gap-1.5">
@@ -1563,9 +1546,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   return (
                     <tr
                       key={track.id}
-                      className={`group transition-colors ${
-                        isCurrent ? 'bg-[#830000]/25' : 'hover:bg-neutral-900/60'
-                      }`}
+                      className={`group transition-colors ${isCurrent ? 'bg-[#830000]/25' : 'hover:bg-neutral-900/60'
+                        }`}
                     >
                       <td className="py-3 pl-4 pr-2 font-mono tabular-nums text-neutral-500">
                         <button
@@ -1593,9 +1575,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                             <button
                               type="button"
                               onClick={() => onNavigate(`/track/${track.id}`)}
-                              className={`font-semibold truncate block text-left hover:underline cursor-pointer ${
-                                isCurrent ? 'text-[#FF0000]' : 'text-white'
-                              }`}
+                              className={`font-semibold truncate block text-left hover:underline cursor-pointer ${isCurrent ? 'text-[#FF0000]' : 'text-white'
+                                }`}
                             >
                               {track.cleanTitle}
                             </button>
@@ -1632,9 +1613,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                             type="button"
                             onClick={() => onToggleLike(track.id)}
                             aria-label="Like track"
-                            className={`p-1.5 rounded cursor-pointer ${
-                              isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
-                            }`}
+                            className={`p-1.5 rounded cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                              }`}
                           >
                             <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000]' : ''}`} />
                           </button>
@@ -2337,11 +2317,10 @@ export const LibraryAndPlaylistsView: React.FC<LibraryAndPlaylistsViewProps> = (
               key={item.path}
               type="button"
               onClick={() => onNavigate(item.path)}
-              className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                route === item.path
+              className={`px-3.5 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${route === item.path
                   ? 'bg-[#BC0202] text-white'
                   : 'bg-[#0A0A0A] text-neutral-400 hover:text-white border border-neutral-800'
-              }`}
+                }`}
             >
               {item.label}
             </button>
@@ -2658,11 +2637,10 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
                 key={tf}
                 type="button"
                 onClick={() => setStatsTimeframe(tf)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize cursor-pointer ${
-                  statsTimeframe === tf
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize cursor-pointer ${statsTimeframe === tf
                     ? 'bg-[#BC0202] text-white'
                     : 'bg-[#0A0A0A] text-neutral-400 border border-neutral-800'
-                }`}
+                  }`}
               >
                 {tf}
               </button>
@@ -2781,11 +2759,10 @@ export const ProfileSettingsStatsView: React.FC<ProfileSettingsStatsViewProps> =
                 key={t.id}
                 type="button"
                 onClick={() => onSetThemeMode(t.id)}
-                className={`p-3 rounded-xl border text-left text-xs font-medium transition-colors cursor-pointer ${
-                  themeMode === t.id
+                className={`p-3 rounded-xl border text-left text-xs font-medium transition-colors cursor-pointer ${themeMode === t.id
                     ? 'bg-[#830000]/35 border-[#FF0000] text-white'
                     : 'bg-black border-neutral-800 text-neutral-400 hover:text-white'
-                }`}
+                  }`}
               >
                 {t.label}
               </button>
