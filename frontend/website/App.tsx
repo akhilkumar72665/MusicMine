@@ -4,6 +4,7 @@ import {
   BarChart2,
   Compass,
   Disc,
+  Film,
   Flame,
   FolderHeart,
   Heart,
@@ -48,6 +49,8 @@ import {
   INITIAL_REPORTS,
   INITIAL_TRACKS,
   INITIAL_USERS,
+  TRENDING_SEARCH_ITEMS,
+  TrendingSearchItem,
 } from './data/catalogFixtures';
 import { audioEngine, EngineSnapshot } from './services/audioEngine';
 import { GlobalPlayer, RepeatMode, ShuffleMode } from './components/GlobalPlayer';
@@ -261,19 +264,19 @@ export function MusicMineWebsiteApp() {
     setHeaderSearchFocused(false);
   }, [route]);
 
-  // Real-time trending searches based on catalog & popular streaming trends
-  const trendingSearches = useMemo(() => {
-    return [
-      { term: 'Aaj Ki Raat', subtitle: 'Stree 2 · Trending #1', tag: '🔥 #1 Trending' },
-      { term: 'Arijit Singh', subtitle: '42.6M Listeners', tag: 'Top Artist' },
-      { term: 'Tauba Tauba', subtitle: 'Bad Newz · Viral', tag: '⚡ Viral' },
-      { term: 'Diljit Dosanjh', subtitle: 'MoonChild Era', tag: 'Popular' },
-      { term: 'Apna Bana Le', subtitle: 'Bhediya · Romantic', tag: 'Romantic' },
-      { term: 'Kesariya', subtitle: 'Brahmāstra', tag: 'Chartbuster' },
-      { term: 'Sachin-Jigar', subtitle: '18.4M Listeners', tag: 'Composer' },
-      { term: 'A.R. Rahman', subtitle: 'Rockstar & Classics', tag: 'Legend' },
-    ];
-  }, []);
+  // Real-time trending searches based on Google, YouTube & Spotify trends
+  const [trendSourceFilter, setTrendSourceFilter] = useState<'all' | 'spotify' | 'youtube' | 'movie' | 'artist'>('all');
+
+  const filteredTrendingSearches = useMemo(() => {
+    if (trendSourceFilter === 'all') return TRENDING_SEARCH_ITEMS;
+    if (trendSourceFilter === 'spotify') return TRENDING_SEARCH_ITEMS.filter((item) => item.source === 'Spotify');
+    if (trendSourceFilter === 'youtube') return TRENDING_SEARCH_ITEMS.filter((item) => item.source === 'YouTube');
+    if (trendSourceFilter === 'movie') return TRENDING_SEARCH_ITEMS.filter((item) => item.category === 'movie');
+    if (trendSourceFilter === 'artist') return TRENDING_SEARCH_ITEMS.filter((item) => item.category === 'artist');
+    return TRENDING_SEARCH_ITEMS;
+  }, [trendSourceFilter]);
+
+  const trendingSearches = filteredTrendingSearches;
 
   // Popular artists suggestion list sorted by user affinity (followed first) & catalog presence
   const popularArtists = useMemo(() => {
@@ -1088,14 +1091,43 @@ export function MusicMineWebsiteApp() {
                   </div>
                 )}
 
-                {/* 1. Trending Searches */}
+                {/* 1. Trending Searches (Google, YouTube & Spotify Driven) */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                       <TrendingUp className="w-3.5 h-3.5 text-[#FF0000]" />
-                      Trending Searches
+                      Trending Searches &amp; Charts
                     </span>
-                    <span className="text-[10px] text-neutral-500">Tap to search</span>
+                    <span className="text-[10px] text-neutral-500 font-mono">Spotify · YouTube · Google</span>
+                  </div>
+
+                  {/* Filter Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar select-none">
+                    {(
+                      [
+                        { id: 'all', label: '🔥 All Trends' },
+                        { id: 'spotify', label: '🎵 Spotify Top 50' },
+                        { id: 'youtube', label: '▶️ YouTube Hits' },
+                        { id: 'movie', label: '🎬 Movies / OST' },
+                        { id: 'artist', label: '⭐ Top Artists' },
+                      ] as const
+                    ).map((chip) => (
+                      <button
+                        key={chip.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTrendSourceFilter(chip.id);
+                        }}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                          trendSourceFilter === chip.id
+                            ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+                            : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                        }`}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -1104,18 +1136,23 @@ export function MusicMineWebsiteApp() {
                         key={`trend-${idx}`}
                         type="button"
                         onClick={() => {
-                          setHeaderSearchQuery(item.term);
-                          saveRecentSearch(item.term);
-                          setHeaderSearchFocused(true);
+                          if (item.route) {
+                            setRoute(item.route as RoutePath);
+                            setHeaderSearchFocused(false);
+                          } else {
+                            setHeaderSearchQuery(item.term);
+                            saveRecentSearch(item.term);
+                            setHeaderSearchFocused(true);
+                          }
                         }}
                         className="p-2.5 rounded-xl bg-neutral-900/80 hover:bg-neutral-800 border border-neutral-800/80 hover:border-[#BC0202]/60 text-left transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
                       >
                         <div className="flex items-center justify-between gap-1 mb-1.5">
                           <span className="text-[10px] font-mono text-neutral-500 group-hover:text-neutral-300">
-                            #{idx + 1}
+                            #{item.rank || idx + 1}
                           </span>
-                          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25">
-                            {item.tag}
+                          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25 truncate max-w-[130px]">
+                            {item.sourceBadge || item.tag}
                           </span>
                         </div>
                         <p className="text-xs font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">
@@ -1516,17 +1553,46 @@ export function MusicMineWebsiteApp() {
                   </div>
                 )}
 
-                {/* 2. Trending Searches (Live Full Grid) */}
+                {/* 2. Trending Searches (Google, YouTube & Spotify Driven) */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-[#FF0000]" />
                       Trending Searches
                     </span>
                     <span className="text-[10px] text-neutral-400 font-mono flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#FF0000] animate-pulse" />
-                      Live #1 Charts
+                      Live Charts
                     </span>
+                  </div>
+
+                  {/* Filter Chips on Mobile */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 no-scrollbar select-none">
+                    {(
+                      [
+                        { id: 'all', label: '🔥 All' },
+                        { id: 'spotify', label: '🎵 Spotify 50' },
+                        { id: 'youtube', label: '▶️ YouTube' },
+                        { id: 'movie', label: '🎬 Movies' },
+                        { id: 'artist', label: '⭐ Artists' },
+                      ] as const
+                    ).map((chip) => (
+                      <button
+                        key={`mob-chip-${chip.id}`}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTrendSourceFilter(chip.id);
+                        }}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                          trendSourceFilter === chip.id
+                            ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+                            : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+                        }`}
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
                   </div>
 
                   <div className="grid grid-cols-2 gap-2.5">
@@ -1535,18 +1601,23 @@ export function MusicMineWebsiteApp() {
                         key={`mob-trend-${idx}`}
                         type="button"
                         onClick={() => {
-                          setHeaderSearchQuery(item.term);
-                          saveRecentSearch(item.term);
-                          setHeaderSearchFocused(true);
+                          if (item.route) {
+                            setRoute(item.route as RoutePath);
+                            setHeaderSearchFocused(false);
+                          } else {
+                            setHeaderSearchQuery(item.term);
+                            saveRecentSearch(item.term);
+                            setHeaderSearchFocused(true);
+                          }
                         }}
                         className="p-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-800/80 hover:border-[#BC0202]/60 text-left transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
                       >
                         <div className="flex items-center justify-between gap-1 mb-2">
                           <span className="text-xs font-mono text-neutral-500 font-bold group-hover:text-neutral-300">
-                            #{idx + 1}
+                            #{item.rank || idx + 1}
                           </span>
-                          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25">
-                            {item.tag}
+                          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25 truncate max-w-[110px]">
+                            {item.sourceBadge || item.tag}
                           </span>
                         </div>
                         <p className="text-sm font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">

@@ -488,16 +488,16 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
 
   return (
     <>
-      {/* Expanded Full Player (Clean Studio View inspired by reference) */}
+      {/* Expanded Full Player (Clean Studio View - Fixed Viewport No Scrolling) */}
       {(expanded || queueOpen) && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label="Expanded Music Player"
-          className="fixed inset-0 z-50 bg-gradient-to-b from-[#180303] via-[#080101] to-black flex flex-col justify-between p-4 sm:p-6 lg:p-8 overflow-y-auto"
+          className="fixed inset-0 z-50 h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-gradient-to-b from-[#180303] via-[#080101] to-black flex flex-col justify-between p-3 sm:p-5 lg:p-6 select-none"
         >
-          {/* Top Bar: Left ChevronDown, Center NOW PLAYING, Right Equalizer & Queue Icons */}
-          <div className="max-w-6xl w-full mx-auto flex items-center justify-between pb-2 shrink-0">
+          {/* Top Bar: Left ChevronDown, Center NOW PLAYING, Right Queue Icon */}
+          <div className="max-w-6xl w-full mx-auto flex items-center justify-between pb-1 shrink-0">
             <button
               type="button"
               onClick={() => {
@@ -508,12 +508,18 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               className="p-2 -ml-2 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
               aria-label="Collapse player"
             >
-              <ChevronDown className="w-6 h-6" />
+              <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-neutral-400 uppercase">
-              NOW PLAYING
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse" />
+              <span className="text-[11px] font-mono font-bold tracking-[0.22em] text-neutral-300 uppercase">
+                NOW PLAYING
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-neutral-400 font-mono hidden sm:inline-block">
+                320 KBPS
+              </span>
+            </div>
 
             <div className="flex items-center gap-1.5 -mr-2">
               <button
@@ -529,12 +535,12 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
             </div>
           </div>
 
-          {/* Main Stage: 2-column balanced layout with clean spacing */}
-          <div className="max-w-6xl w-full mx-auto my-auto grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-14 items-center py-4 flex-1">
-            {/* Left Column: Floating Large Artwork + Integrated Live Beats Visualizer + Synchronized Lyrics Underneath */}
-            <div className="md:col-span-6 flex flex-col items-center justify-center">
+          {/* Desktop Layout: 2-column balanced stage */}
+          <div className="hidden md:grid md:grid-cols-12 md:gap-8 lg:gap-14 items-center my-auto w-full max-w-6xl mx-auto flex-1 min-h-0 py-2">
+            {/* Left Column: Floating Large Artwork + Integrated Live Beats Visualizer + Synchronized Lyrics */}
+            <div className="md:col-span-6 flex flex-col items-center justify-center space-y-3">
               <div
-                className={`relative group w-full max-w-md sm:max-w-lg lg:max-w-[460px] xl:max-w-[500px] aspect-square transition-all duration-300 ${engineState.isPlaying ? 'mm-floating-artwork' : 'shadow-[0_25px_60px_rgba(0,0,0,0.95)]'
+                className={`relative group max-h-[38vh] lg:max-h-[44vh] max-w-[38vh] lg:max-w-[44vh] aspect-square transition-all duration-300 ${engineState.isPlaying ? 'mm-floating-artwork' : 'shadow-[0_25px_60px_rgba(0,0,0,0.95)]'
                   }`}
               >
                 <img
@@ -557,7 +563,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
               </div>
 
               {/* Integrated Live Beats Visualizer with Real-time Active Lyric line */}
-              <div className="w-full max-w-md sm:max-w-lg lg:max-w-[460px] xl:max-w-[500px] mt-4 space-y-3 transition-all duration-300">
+              <div className="w-full max-w-[380px] lg:max-w-[440px] space-y-2.5 transition-all duration-300">
                 <LiveBeatsVisualizer isPlaying={engineState.isPlaying} barCount={28} />
 
                 {/* When lyrics on: only the single active line right inside beats visualizer, tap opens full lyrics */}
@@ -566,11 +572,11 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                     type="button"
                     onClick={() => setActiveModal('fullLyrics')}
                     title="Click for full lyrics"
-                    className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-[#200505]/90 via-[#0A0A0A]/90 to-[#200505]/90 border border-[#BC0202]/60 hover:border-[#FF0000] shadow-[0_4px_22px_rgba(255,0,0,0.25)] transition-all cursor-pointer group text-center block"
+                    className="w-full p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-[#200505]/90 via-[#0A0A0A]/90 to-[#200505]/90 border border-[#BC0202]/60 hover:border-[#FF0000] shadow-[0_4px_18px_rgba(255,0,0,0.25)] transition-all cursor-pointer group text-center block"
                   >
-                    <div className="flex items-center justify-between text-[11px] mb-1.5 text-neutral-400">
-                      <span className="flex items-center gap-1.5 font-bold text-[#FF0000] uppercase tracking-wider text-[10px]">
-                        <span className="w-2 h-2 rounded-full bg-[#FF0000] animate-pulse shadow-[0_0_8px_#FF0000]" />
+                    <div className="flex items-center justify-between text-[10px] mb-1 text-neutral-400">
+                      <span className="flex items-center gap-1 font-bold text-[#FF0000] uppercase tracking-wider text-[9px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse shadow-[0_0_8px_#FF0000]" />
                         Now Singing
                       </span>
                       <span className="text-[10px] text-neutral-400 group-hover:text-white group-hover:underline transition-colors flex items-center gap-1">
@@ -578,7 +584,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                         <ChevronRight className="w-3 h-3 text-[#FF0000]" />
                       </span>
                     </div>
-                    <p className="text-sm sm:text-base font-extrabold text-white tracking-wide leading-relaxed line-clamp-2 px-1">
+                    <p className="text-xs sm:text-sm font-bold text-white tracking-wide leading-snug line-clamp-2 px-1">
                       {lyrics[activeLyricIndex]?.text || '♪ Singing along...'}
                     </p>
                   </button>
@@ -587,12 +593,12 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
             </div>
 
             {/* Right Column: Title, Heart, More, Scrubber, Transport, 15s Skip, Pills & Volume */}
-            <div className="md:col-span-6 flex flex-col justify-center space-y-5 sm:space-y-6 max-w-lg mx-auto md:mx-0 w-full">
+            <div className="md:col-span-6 flex flex-col justify-center space-y-4 max-w-lg mx-auto md:mx-0 w-full">
               {/* Song Title, Artist & Like/More */}
               <div className="space-y-1">
                 <div className="flex items-start justify-between gap-4">
                   <h1
-                    className="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight leading-snug line-clamp-2"
+                    className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-white tracking-tight leading-snug line-clamp-2"
                     title={currentTrack.cleanTitle}
                   >
                     {currentTrack.cleanTitle}
@@ -617,7 +623,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   </div>
                 </div>
 
-                <p className="text-sm sm:text-base text-neutral-400">
+                <p className="text-xs sm:text-sm text-neutral-400">
                   <button
                     type="button"
                     onClick={() => {
@@ -628,17 +634,17 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   >
                     {currentTrack.artistName}
                   </button>
+                  {currentTrack.albumName && (
+                    <span className="text-neutral-500"> · {currentTrack.albumName}</span>
+                  )}
                   {currentTrack.language && (
                     <span className="text-neutral-500"> · {currentTrack.language}</span>
-                  )}
-                  {currentTrack.genre && (
-                    <span className="text-neutral-500"> · {currentTrack.genre}</span>
                   )}
                 </p>
               </div>
 
               {/* Scrubber Progress Bar & Timestamps */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <input
                   type="range"
                   aria-label="Seek timeline"
@@ -659,20 +665,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 <button
                   type="button"
                   onClick={onToggleShuffle}
-                  aria-label={
-                    shuffleMode === 'smart'
-                      ? 'Smart Shuffle (Favorites & Top Plays)'
-                      : shuffleMode === 'standard'
-                        ? 'Standard Shuffle'
-                        : 'Shuffle Off'
-                  }
-                  title={
-                    shuffleMode === 'smart'
-                      ? 'Smart Shuffle: Prioritizes favorites & most played tracks'
-                      : shuffleMode === 'standard'
-                        ? 'Standard Shuffle: Random'
-                        : 'Shuffle Off'
-                  }
+                  aria-label={shuffleMode === 'smart' ? 'Smart Shuffle' : shuffleMode === 'standard' ? 'Standard Shuffle' : 'Shuffle Off'}
                   className={`relative p-2 rounded-full transition-all cursor-pointer ${shuffleMode === 'smart'
                       ? 'text-[#FF0000] bg-[#FF0000]/15 ring-1 ring-[#FF0000]/50 shadow-[0_0_12px_rgba(255,0,0,0.3)]'
                       : shuffleMode === 'standard'
@@ -702,14 +695,14 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   type="button"
                   onClick={onTogglePlay}
                   aria-label={engineState.isPlaying ? 'Pause' : 'Play'}
-                  className="w-16 h-16 rounded-full bg-[#FF0000] hover:bg-[#d80000] text-white flex items-center justify-center shadow-[0_0_24px_rgba(255,0,0,0.6)] transition-transform active:scale-95 cursor-pointer shrink-0"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FF0000] hover:bg-[#d80000] text-white flex items-center justify-center shadow-[0_0_24px_rgba(255,0,0,0.6)] transition-transform active:scale-95 cursor-pointer shrink-0"
                 >
                   {engineState.isBuffering ? (
-                    <Loader2 className="w-7 h-7 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" />
                   ) : engineState.isPlaying ? (
-                    <Pause className="w-7 h-7 fill-current" />
+                    <Pause className="w-6 h-6 fill-current" />
                   ) : (
-                    <Play className="w-7 h-7 fill-current ml-1" />
+                    <Play className="w-6 h-6 fill-current ml-1" />
                   )}
                 </button>
 
@@ -737,17 +730,17 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 </button>
               </div>
 
-              {/* Sub-Controls: -15s and +15s and Equalizer Icon Button (Beside 15s skip & next) */}
-              <div className="flex items-center justify-center gap-6 sm:gap-8 py-0.5">
+              {/* Sub-Controls: -15s and +15s and Equalizer Icon Button (Beside 15s skip) */}
+              <div className="flex items-center justify-center gap-6 py-0.5">
                 <button
                   type="button"
                   onClick={() => audioEngine.skipBySeconds(-15)}
                   aria-label="Rewind 15 seconds"
-                  className="flex flex-col items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="flex flex-col items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   <div className="relative flex items-center justify-center">
-                    <RotateCcw className="w-6 h-6" />
-                    <span className="absolute text-[8px] font-mono font-bold pt-0.5">15</span>
+                    <RotateCcw className="w-5 h-5" />
+                    <span className="absolute text-[7px] font-mono font-bold pt-0.5">15</span>
                   </div>
                 </button>
 
@@ -755,112 +748,94 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   type="button"
                   onClick={() => audioEngine.skipBySeconds(15)}
                   aria-label="Forward 15 seconds"
-                  className="flex flex-col items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="flex flex-col items-center justify-center w-9 h-9 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   <div className="relative flex items-center justify-center">
-                    <RotateCw className="w-6 h-6" />
-                    <span className="absolute text-[8px] font-mono font-bold pt-0.5">15</span>
+                    <RotateCw className="w-5 h-5" />
+                    <span className="absolute text-[7px] font-mono font-bold pt-0.5">15</span>
                   </div>
                 </button>
 
-                {/* Equalizer Icon-type Button right beside 15s skip */}
+                {/* Equalizer Icon Button */}
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'equalizer' ? 'none' : 'equalizer')}
                   aria-label="Equalizer & Audio Modes"
                   title="5-Band Equalizer & Audio Modes"
-                  className={`flex items-center justify-center w-10 h-10 rounded-full transition-all cursor-pointer ${activeModal === 'equalizer' || engineState.eqEnabled
+                  className={`flex items-center justify-center w-9 h-9 rounded-full transition-all cursor-pointer ${activeModal === 'equalizer' || engineState.eqEnabled
                       ? 'bg-[#BC0202] text-white shadow-[0_0_14px_rgba(255,0,0,0.5)] ring-1 ring-[#FF0000]'
                       : 'hover:bg-white/10 text-neutral-300 hover:text-white'
                     }`}
                 >
-                  <Sliders className="w-5 h-5" />
+                  <Sliders className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Compact Pill Buttons Row (Clean button form for secondary features) */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
-                {/* 1. Lyrics Pill */}
+              {/* Compact Pill Buttons Row */}
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-0.5">
                 <button
                   type="button"
                   onClick={handleToggleLyricsOnOff}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${lyricsOn
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${lyricsOn
                       ? 'bg-[#BC0202] border-[#FF0000] text-white shadow-[0_0_12px_rgba(255,0,0,0.4)]'
-                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white'
                     }`}
                 >
                   <Mic2 className="w-3.5 h-3.5" />
                   <span>{lyricsOn ? 'Lyrics On' : 'Lyrics Off'}</span>
                 </button>
 
-                {/* 2. Speed Pill */}
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'speed' ? 'none' : 'speed')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.playbackRate !== 1
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.playbackRate !== 1
                       ? 'bg-[#BC0202] border-[#FF0000] text-white'
-                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white'
                     }`}
                 >
                   <Gauge className="w-3.5 h-3.5" />
                   <span>Speed {engineState.playbackRate !== 1 ? `(${engineState.playbackRate}x)` : ''}</span>
                 </button>
 
-                {/* 3. 8D Audio Pill (Beside Lyrics and Speed) */}
                 <button
                   type="button"
                   onClick={() => audioEngine.setSpatial8dEnabled(!engineState.spatial8dEnabled)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.spatial8dEnabled
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.spatial8dEnabled
                       ? 'bg-[#BC0202] border-[#FF0000] text-white shadow-[0_0_12px_rgba(255,0,0,0.4)]'
-                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white'
                     }`}
                 >
                   <Radio className="w-3.5 h-3.5" />
                   <span>8D Audio {engineState.spatial8dEnabled ? 'On' : 'Off'}</span>
                 </button>
 
-                {/* 4. Sleep Timer Pill */}
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'sleep' ? 'none' : 'sleep')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${sleepTimerMinutes !== null
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${sleepTimerMinutes !== null
                       ? 'bg-[#BC0202] border-[#FF0000] text-white'
-                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white'
                     }`}
                 >
                   <Moon className="w-3.5 h-3.5" />
                   <span>Sleep timer {sleepTimerMinutes !== null ? `(${sleepTimerMinutes}m)` : ''}</span>
                 </button>
 
-                {/* 5. A-B Loop Pill */}
                 <button
                   type="button"
                   onClick={() => setActiveModal(activeModal === 'loop' ? 'none' : 'loop')}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.loopStartSec !== null || engineState.loopEndSec !== null
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${engineState.loopStartSec !== null || engineState.loopEndSec !== null
                       ? 'bg-[#BC0202] border-[#FF0000] text-white'
-                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                      : 'bg-[#121212] border-neutral-800 text-neutral-300 hover:text-white'
                     }`}
                 >
                   <Repeat className="w-3.5 h-3.5" />
                   <span>A-B Loop</span>
                 </button>
-
-                {/* 6. Smart Shuffle Pill */}
-                {shuffleMode === 'smart' && (
-                  <button
-                    type="button"
-                    onClick={onToggleShuffle}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium border bg-[#830000]/60 border-[#FF0000] text-white shadow-[0_0_12px_rgba(255,0,0,0.4)] transition-colors cursor-pointer"
-                    title="Smart Shuffle active (Prioritizing favorites & top played). Click to toggle."
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
-                    <span>Smart Shuffle</span>
-                  </button>
-                )}
               </div>
 
-              {/* Volume Slider (Matching Bottom of Reference Image) */}
-              <div className="flex items-center gap-3 pt-2">
+              {/* Volume Slider */}
+              <div className="flex items-center gap-3 pt-1">
                 <button
                   type="button"
                   onClick={onToggleMute}
@@ -883,6 +858,208 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   onChange={(e) => onVolumeChange(Number(e.target.value))}
                   className="w-full accent-white h-1 bg-neutral-700 rounded-lg cursor-pointer"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Layout: 100% Fixed snugly on screen, zero scrolling */}
+          <div className="flex md:hidden flex-col flex-1 min-h-0 justify-between py-1 w-full max-w-sm mx-auto">
+            {/* Center: Sized Artwork + Beats Visualizer + Active Lyric Pill */}
+            <div className="flex-1 min-h-0 flex flex-col items-center justify-center space-y-2 py-1">
+              <div className="relative max-h-[26vh] max-w-[26vh] aspect-square shrink-0">
+                <img
+                  src={currentTrack.thumbnailUrl}
+                  alt={currentTrack.cleanTitle}
+                  className="w-full h-full object-cover rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.85)] border border-neutral-800"
+                />
+                <div className="absolute top-2 left-2 flex items-center gap-1">
+                  {engineState.spatial8dEnabled && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-black/85 text-[#FF0000] border border-[#FF0000]/40 text-[9px] font-mono font-bold">
+                      8D
+                    </span>
+                  )}
+                  {engineState.eqEnabled && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-black/85 text-white border border-neutral-700 text-[9px] font-mono font-bold">
+                      EQ
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Mobile Live Beats */}
+              <div className="w-full max-w-[220px] shrink-0">
+                <LiveBeatsVisualizer isPlaying={engineState.isPlaying} barCount={20} />
+              </div>
+
+              {/* Mobile Active Lyric 1-Line Pill */}
+              {lyricsOn && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModal('fullLyrics')}
+                  className="w-full max-w-[280px] px-3 py-1.5 rounded-full bg-gradient-to-r from-[#200505] to-[#0A0A0A] border border-[#BC0202]/60 flex items-center justify-between text-xs text-white shadow-md cursor-pointer shrink-0"
+                >
+                  <span className="flex items-center gap-1.5 text-[10px] text-[#FF0000] font-bold uppercase shrink-0">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse" />
+                    Lyrics
+                  </span>
+                  <span className="truncate text-xs font-semibold px-2 text-neutral-200">
+                    {lyrics[activeLyricIndex]?.text || '♪ Singing along...'}
+                  </span>
+                  <ChevronRight className="w-3.5 h-3.5 text-[#FF0000] shrink-0" />
+                </button>
+              )}
+            </div>
+
+            {/* Bottom Controls Area */}
+            <div className="shrink-0 space-y-2 pt-1">
+              {/* Title, Artist, Heart & More */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-base font-display font-bold text-white truncate" title={currentTrack.cleanTitle}>
+                    {currentTrack.cleanTitle}
+                  </h1>
+                  <p className="text-xs text-neutral-400 truncate">
+                    {currentTrack.artistName} {currentTrack.albumName ? `· ${currentTrack.albumName}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onToggleLike(currentTrack.id)}
+                    className="p-1.5 text-neutral-400 hover:text-white"
+                  >
+                    <Heart className={`w-5 h-5 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''}`} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal(activeModal === 'more' ? 'none' : 'more')}
+                    className="p-1.5 text-neutral-400 hover:text-white"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Scrubber */}
+              <div className="space-y-0.5">
+                <input
+                  type="range"
+                  min={0}
+                  max={engineState.duration || 100}
+                  value={engineState.currentTime}
+                  onChange={(e) => onSeek(Number(e.target.value))}
+                  className="w-full accent-[#FF0000] h-1.5 bg-neutral-800 rounded-lg cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] font-mono tabular-nums text-neutral-400">
+                  <span>{formatDuration(engineState.currentTime)}</span>
+                  <span>{formatDuration(engineState.duration)}</span>
+                </div>
+              </div>
+
+              {/* Main Transport */}
+              <div className="flex items-center justify-between px-1">
+                <button
+                  type="button"
+                  onClick={onToggleShuffle}
+                  className={`p-1.5 rounded-full ${shuffleMode !== 'off' ? 'text-[#FF0000]' : 'text-neutral-400'}`}
+                >
+                  <Shuffle className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onPrev}
+                  className="p-1.5 text-neutral-300 hover:text-white"
+                >
+                  <SkipBack className="w-5 h-5 fill-current" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onTogglePlay}
+                  className="w-13 h-13 rounded-full bg-[#FF0000] text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.6)] cursor-pointer"
+                >
+                  {engineState.isBuffering ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : engineState.isPlaying ? (
+                    <Pause className="w-5 h-5 fill-current" />
+                  ) : (
+                    <Play className="w-5 h-5 fill-current ml-0.5" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onNext}
+                  className="p-1.5 text-neutral-300 hover:text-white"
+                >
+                  <SkipForward className="w-5 h-5 fill-current" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onCycleRepeat}
+                  className={`p-1.5 rounded-full ${repeatMode !== 'off' ? 'text-[#FF0000]' : 'text-neutral-400'}`}
+                >
+                  {repeatMode === 'one' ? <Repeat1 className="w-4 h-4" /> : <Repeat className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Skip 15s & EQ Button */}
+              <div className="flex items-center justify-center gap-5 py-0.5">
+                <button
+                  type="button"
+                  onClick={() => audioEngine.skipBySeconds(-15)}
+                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10 text-neutral-300"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => audioEngine.skipBySeconds(15)}
+                  className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10 text-neutral-300"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(activeModal === 'equalizer' ? 'none' : 'equalizer')}
+                  className={`flex items-center justify-center w-8 h-8 rounded-full ${activeModal === 'equalizer' || engineState.eqEnabled ? 'bg-[#BC0202] text-white shadow-sm' : 'text-neutral-300'}`}
+                >
+                  <Sliders className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Horizontal Pill Row */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 justify-center">
+                <button
+                  type="button"
+                  onClick={handleToggleLyricsOnOff}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium border shrink-0 ${lyricsOn ? 'bg-[#BC0202] border-[#FF0000] text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-300'}`}
+                >
+                  Lyrics {lyricsOn ? 'On' : 'Off'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(activeModal === 'speed' ? 'none' : 'speed')}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium border shrink-0 ${engineState.playbackRate !== 1 ? 'bg-[#BC0202] border-[#FF0000] text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-300'}`}
+                >
+                  {engineState.playbackRate !== 1 ? `${engineState.playbackRate}x` : '1x Speed'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => audioEngine.setSpatial8dEnabled(!engineState.spatial8dEnabled)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium border shrink-0 ${engineState.spatial8dEnabled ? 'bg-[#BC0202] border-[#FF0000] text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-300'}`}
+                >
+                  8D {engineState.spatial8dEnabled ? 'On' : 'Off'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveModal(activeModal === 'sleep' ? 'none' : 'sleep')}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium border shrink-0 ${sleepTimerMinutes !== null ? 'bg-[#BC0202] border-[#FF0000] text-white' : 'bg-neutral-900 border-neutral-800 text-neutral-300'}`}
+                >
+                  Sleep {sleepTimerMinutes !== null ? `${sleepTimerMinutes}m` : ''}
+                </button>
               </div>
             </div>
           </div>

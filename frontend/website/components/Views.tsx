@@ -10,6 +10,7 @@ import {
   Compass,
   Disc,
   Edit3,
+  Film,
   Flame,
   FolderPlus,
   Heart,
@@ -53,7 +54,7 @@ import {
   UserAccount,
   ViewStateMode,
 } from '../../../shared/types/music';
-import { formatDuration } from '../data/catalogFixtures';
+import { formatDuration, TRENDING_SEARCH_ITEMS, TrendingSearchItem } from '../data/catalogFixtures';
 import { fetchSearchTracks } from '../services/apiClient';
 import { ArtworkTile } from './ArtworkTile';
 
@@ -343,16 +344,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   return (
     <div className="space-y-10 pb-8">
-      {/* Auto-Sliding Trending Spotlight Carousel (Matching Reference Image image_1ed3f949.png) */}
+      {/* Redesigned Cinema-Grade Sliding Hero Spotlight Banner */}
       {heroSlides.length > 0 && (
         <section
           aria-label="Trending songs spotlight slider"
           onMouseEnter={() => setHeroPaused(true)}
           onMouseLeave={() => setHeroPaused(false)}
-          className="relative rounded-3xl overflow-hidden border border-neutral-800/80 bg-gradient-to-r from-[#2A0303] via-[#140202] to-[#0A0A0A] shadow-2xl"
+          className="relative rounded-3xl overflow-hidden border border-neutral-800/90 bg-[#070101] shadow-[0_25px_60px_rgba(0,0,0,0.95)]"
         >
+          {/* Dynamic Ambient Blur Backdrop matching current slide */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+            <img
+              src={heroSlides[safeHeroIndex]?.thumbnailUrl}
+              alt=""
+              className="w-full h-full object-cover scale-125 filter blur-3xl opacity-35 transition-all duration-1000 ease-out"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#070101] via-[#070101]/95 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#070101] via-[#070101]/40 to-black/30" />
+            <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#BC0202]/20 filter blur-3xl pointer-events-none" />
+          </div>
+
           <div
-            className="flex transition-transform duration-700 ease-out"
+            className="flex transition-transform duration-700 ease-out relative z-10"
             style={{ transform: `translate3d(-${safeHeroIndex * 100}%, 0, 0)` }}
           >
             {heroSlides.map((slideTrack, idx) => {
@@ -361,58 +374,97 @@ export const HomeView: React.FC<HomeViewProps> = ({
               return (
                 <div
                   key={slideTrack.id}
-                  className="w-full shrink-0 p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center"
+                  className="w-full shrink-0 p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center"
                 >
-                  {/* Left Column: Badge, Title, Artist, Play now, Details, Like, Slide Dashes */}
+                  {/* Left Column: Badges, Title, Movie, Artist, Action Buttons */}
                   <div className="lg:col-span-7 space-y-4 sm:space-y-5">
-                    {/* #N NEW & TRENDING Red Pill Badge */}
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF0000] text-white text-[11px] font-bold uppercase tracking-wider shadow-[0_0_14px_rgba(255,0,0,0.55)]">
-                      <Flame className="w-3.5 h-3.5 fill-white" />
-                      <span>#{idx + 1} NEW &amp; TRENDING</span>
+                    {/* Platform Authority Badges */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-[#FF0000] to-[#BC0202] text-white text-[11px] font-extrabold uppercase tracking-wider shadow-[0_0_16px_rgba(255,0,0,0.6)]">
+                        <Flame className="w-3.5 h-3.5 fill-white" />
+                        <span>#{idx + 1} ON SPOTIFY &amp; YOUTUBE</span>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-neutral-300 border border-neutral-700/80 text-[11px] font-medium">
+                        <Film className="w-3 h-3 text-[#FF0000]" />
+                        <span>Movie Soundtrack</span>
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full bg-white/5 backdrop-blur-md text-neutral-400 border border-neutral-800 text-[11px] font-mono hidden sm:inline-flex">
+                        320 KBPS ULTRA HD
+                      </span>
                     </div>
 
                     {/* Bold Title */}
                     <h1
-                      className="text-2xl sm:text-3xl lg:text-4xl xl:text-[40px] font-display font-extrabold text-white tracking-tight leading-tight line-clamp-2"
+                      className="text-2xl sm:text-4xl lg:text-[44px] xl:text-[48px] font-display font-extrabold text-white tracking-tight leading-[1.12] line-clamp-2 drop-shadow-md"
                       style={{ textWrap: 'balance' }}
                       title={slideTrack.cleanTitle}
                     >
                       {slideTrack.cleanTitle}
                     </h1>
 
-                    {/* Subtitle / Artist & Duration */}
-                    <p className="text-xs sm:text-sm text-neutral-400 font-normal">
-                      {slideTrack.artistName} · {formatDuration(slideTrack.duration)}
-                    </p>
+                    {/* Movie Soundtrack and Artist Info Links */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-neutral-300">
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(`/album/${slideTrack.albumId}`)}
+                        className="font-bold text-white hover:text-[#FF0000] flex items-center gap-1.5 underline underline-offset-4 cursor-pointer transition-colors"
+                      >
+                        <Film className="w-3.5 h-3.5 text-[#FF0000]" />
+                        <span>{slideTrack.albumName}</span>
+                      </button>
+                      <span className="text-neutral-500 font-bold">·</span>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(`/artist/${slideTrack.artistId}`)}
+                        className="text-neutral-300 hover:text-white cursor-pointer transition-colors"
+                      >
+                        {slideTrack.artistName}
+                      </button>
+                      <span className="text-neutral-500 font-bold">·</span>
+                      <span className="text-neutral-400 font-mono tabular-nums">{formatDuration(slideTrack.duration)}</span>
+                      <span className="text-neutral-500 font-bold">·</span>
+                      <span className="text-neutral-400">{slideTrack.language}</span>
+                    </div>
 
-                    {/* Action Buttons Matching Reference Image */}
-                    <div className="flex items-center gap-3 pt-1">
-                      {/* Play now Pill Button */}
+                    {/* Redesigned Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
+                      {/* Big Glowing Play Now Button */}
                       <button
                         type="button"
                         onClick={() => onPlayTrack(slideTrack, visibleTracks)}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#FF0000] hover:bg-[#e00000] text-white font-bold text-sm shadow-[0_4px_22px_rgba(255,0,0,0.55)] transition-all cursor-pointer whitespace-nowrap"
+                        className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-[#FF0000] hover:bg-[#e00000] text-white font-extrabold text-sm shadow-[0_0_25px_rgba(255,0,0,0.65)] hover:shadow-[0_0_32px_rgba(255,0,0,0.85)] transition-all transform active:scale-95 cursor-pointer whitespace-nowrap"
                       >
                         {isTrackPlaying ? (
                           <>
                             <Pause className="w-4 h-4 fill-white" />
-                            <span>Pause</span>
+                            <span>Pause Song</span>
                           </>
                         ) : (
                           <>
-                            <Play className="w-4 h-4 fill-white" />
-                            <span>Play now</span>
+                            <Play className="w-4 h-4 fill-white ml-0.5" />
+                            <span>Play Now</span>
                           </>
                         )}
                       </button>
 
-                      {/* Details Pill Button */}
+                      {/* Explore Movie / Album Button */}
                       <button
                         type="button"
                         onClick={() => onNavigate(`/album/${slideTrack.albumId}`)}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-sm border border-white/10 transition-colors cursor-pointer whitespace-nowrap"
+                        className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/10 hover:bg-white/15 text-white font-semibold text-xs sm:text-sm border border-white/15 backdrop-blur-md transition-all cursor-pointer whitespace-nowrap"
                       >
-                        <span>Details</span>
+                        <Film className="w-3.5 h-3.5 text-[#FF0000]" />
+                        <span>Movie Songs</span>
+                      </button>
+
+                      {/* Artist Page Button */}
+                      <button
+                        type="button"
+                        onClick={() => onNavigate(`/artist/${slideTrack.artistId}`)}
+                        className="inline-flex items-center gap-1.5 px-4 py-3 rounded-full bg-neutral-900/80 hover:bg-neutral-800 text-neutral-300 hover:text-white font-medium text-xs border border-neutral-800 transition-colors cursor-pointer whitespace-nowrap hidden sm:inline-flex"
+                      >
+                        <User className="w-3.5 h-3.5 text-neutral-400" />
+                        <span>Artist</span>
                       </button>
 
                       {/* Heart / Like Button */}
@@ -420,33 +472,32 @@ export const HomeView: React.FC<HomeViewProps> = ({
                         type="button"
                         onClick={() => onToggleLike(slideTrack.id)}
                         aria-label={isLiked ? 'Unlike track' : 'Like track'}
-                        className="p-2.5 rounded-full hover:bg-white/10 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                        className="p-3 rounded-full bg-black/60 hover:bg-white/10 border border-neutral-800 text-neutral-300 hover:text-white transition-all cursor-pointer"
                       >
                         <Heart
-                          className={`w-5 h-5 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''
-                            }`}
+                          className={`w-5 h-5 ${isLiked ? 'fill-[#FF0000] text-[#FF0000]' : ''}`}
                         />
                       </button>
                     </div>
 
-                    {/* Bottom Left Slide Indicators */}
-                    <div className="flex items-center gap-1.5 pt-3">
+                    {/* Bottom Slide Mini Dash / Progress Indicators */}
+                    <div className="flex items-center gap-2 pt-2">
                       {heroSlides.map((s, i) => (
                         <button
                           key={s.id}
                           type="button"
                           onClick={() => setHeroSlideIndex(i)}
-                          aria-label={`Slide ${i + 1}`}
-                          className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${i === safeHeroIndex
-                            ? 'w-7 bg-white shadow-[0_0_8px_white]'
-                            : 'w-3.5 bg-neutral-700 hover:bg-neutral-500'
+                          aria-label={`Slide ${i + 1}: ${s.cleanTitle}`}
+                          className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === safeHeroIndex
+                            ? 'w-9 bg-[#FF0000] shadow-[0_0_10px_#FF0000]'
+                            : 'w-4 bg-neutral-700/80 hover:bg-neutral-500'
                             }`}
                         />
                       ))}
                     </div>
                   </div>
 
-                  {/* Right Column: Square Artwork Thumbnail */}
+                  {/* Right Column: 3D-styled Poster Artwork Thumbnail */}
                   <div className="lg:col-span-5 flex justify-center lg:justify-end">
                     <button
                       type="button"
@@ -454,11 +505,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       className="relative group cursor-pointer"
                       aria-label={`Play ${slideTrack.cleanTitle}`}
                     >
-                      <img
-                        src={slideTrack.thumbnailUrl}
-                        alt={slideTrack.cleanTitle}
-                        className="w-52 h-52 sm:w-64 sm:h-64 lg:w-72 lg:h-72 aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.95)] border border-neutral-800/80"
-                      />
+                      <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] border-2 border-neutral-700/60 group-hover:border-[#FF0000]/80 transition-all duration-300 transform group-hover:scale-[1.02]">
+                        <img
+                          src={slideTrack.thumbnailUrl}
+                          alt={slideTrack.cleanTitle}
+                          className="w-48 h-48 sm:w-60 sm:h-60 lg:w-72 lg:h-72 aspect-square object-cover"
+                        />
+                        {/* Hover Overlay Play Icon */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-full bg-[#FF0000] text-white flex items-center justify-center shadow-[0_0_20px_rgba(255,0,0,0.8)] transform scale-90 group-hover:scale-100 transition-transform">
+                            {isTrackPlaying ? (
+                              <Pause className="w-6 h-6 fill-current" />
+                            ) : (
+                              <Play className="w-6 h-6 fill-current ml-1" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -466,9 +529,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
             })}
           </div>
 
-          {/* Bottom Right Arrow Controls Matching Reference Image */}
+          {/* Bottom Right Glass Navigation Controls */}
           {heroSlides.length > 1 && (
-            <div className="absolute right-6 sm:right-8 bottom-6 sm:bottom-8 z-10 flex items-center gap-2">
+            <div className="absolute right-5 sm:right-8 bottom-5 sm:bottom-8 z-20 flex items-center gap-2">
               <button
                 type="button"
                 onClick={() =>
@@ -477,7 +540,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   )
                 }
                 aria-label="Previous trending song"
-                className="w-9 h-9 rounded-full bg-black/85 hover:bg-neutral-800 text-white flex items-center justify-center border border-neutral-800/80 hover:border-neutral-700 transition-colors cursor-pointer shadow-lg"
+                className="w-10 h-10 rounded-full bg-black/75 hover:bg-[#BC0202] text-white flex items-center justify-center border border-neutral-700/80 hover:border-[#FF0000] backdrop-blur-md transition-all cursor-pointer shadow-lg active:scale-95"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -487,7 +550,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   setHeroSlideIndex((prev) => (prev + 1) % heroSlides.length)
                 }
                 aria-label="Next trending song"
-                className="w-9 h-9 rounded-full bg-black/85 hover:bg-neutral-800 text-white flex items-center justify-center border border-neutral-800 hover:border-neutral-700 transition-colors cursor-pointer shadow-lg"
+                className="w-10 h-10 rounded-full bg-black/75 hover:bg-[#BC0202] text-white flex items-center justify-center border border-neutral-700/80 hover:border-[#FF0000] backdrop-blur-md transition-all cursor-pointer shadow-lg active:scale-95"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -1082,16 +1145,18 @@ export const SearchView: React.FC<SearchViewProps> = ({
     } catch { }
   };
 
-  const trendingSearches = [
-    { term: 'Aaj Ki Raat', subtitle: 'Stree 2 · Trending #1', tag: '🔥 #1 Trending' },
-    { term: 'Arijit Singh', subtitle: '42.6M Listeners', tag: 'Top Artist' },
-    { term: 'Tauba Tauba', subtitle: 'Bad Newz · Viral', tag: '⚡ Viral' },
-    { term: 'Diljit Dosanjh', subtitle: 'MoonChild Era', tag: 'Popular' },
-    { term: 'Apna Bana Le', subtitle: 'Bhediya · Romantic', tag: 'Romantic' },
-    { term: 'Kesariya', subtitle: 'Brahmāstra', tag: 'Chartbuster' },
-    { term: 'Sachin-Jigar', subtitle: '18.4M Listeners', tag: 'Composer' },
-    { term: 'A.R. Rahman', subtitle: 'Rockstar & Classics', tag: 'Legend' },
-  ];
+  const [trendFilter, setTrendFilter] = useState<'all' | 'spotify' | 'youtube' | 'movie' | 'artist'>('all');
+
+  const filteredTrends = useMemo(() => {
+    if (trendFilter === 'all') return TRENDING_SEARCH_ITEMS;
+    if (trendFilter === 'spotify') return TRENDING_SEARCH_ITEMS.filter((item) => item.source === 'Spotify');
+    if (trendFilter === 'youtube') return TRENDING_SEARCH_ITEMS.filter((item) => item.source === 'YouTube');
+    if (trendFilter === 'movie') return TRENDING_SEARCH_ITEMS.filter((item) => item.category === 'movie');
+    if (trendFilter === 'artist') return TRENDING_SEARCH_ITEMS.filter((item) => item.category === 'artist');
+    return TRENDING_SEARCH_ITEMS;
+  }, [trendFilter]);
+
+  const trendingSearches = filteredTrends;
 
   const visibleTracks = useMemo(
     () => tracks.filter((t) => t.visibleInCatalog),
@@ -1494,36 +1559,67 @@ export const SearchView: React.FC<SearchViewProps> = ({
           </div>
         )}
 
-        {/* Real-Time Trending Searches Grid (Matching Top Search) */}
+        {/* Real-Time Trending Searches Grid (Google, YouTube & Spotify Driven) */}
         {!query && (
           <div className="space-y-3 pt-2 border-t border-neutral-800/80">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-[#FF0000]" />
-                Trending Searches & Top Charts
+                Trending Searches &amp; Charts
               </span>
               <span className="text-[10px] text-neutral-400 font-mono flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#FF0000] animate-pulse" />
-                Live Trends
+                Spotify · YouTube · Google Trends
               </span>
             </div>
+
+            {/* Source Filter Chips */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar select-none">
+              {(
+                [
+                  { id: 'all', label: '🔥 All Trends' },
+                  { id: 'spotify', label: '🎵 Spotify Top 50' },
+                  { id: 'youtube', label: '▶️ YouTube Hits' },
+                  { id: 'movie', label: '🎬 Hit Movies' },
+                  { id: 'artist', label: '⭐ Top Artists' },
+                ] as const
+              ).map((chip) => (
+                <button
+                  key={`srch-chip-${chip.id}`}
+                  type="button"
+                  onClick={() => setTrendFilter(chip.id)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                    trendFilter === chip.id
+                      ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+                      : 'bg-[#121212] text-neutral-400 hover:text-white border border-neutral-800'
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {trendingSearches.map((item, idx) => (
                 <button
                   key={`srch-trend-${idx}`}
                   type="button"
                   onClick={() => {
-                    setQuery(item.term);
-                    saveRecentSearch(item.term);
+                    if (item.route) {
+                      onNavigate(item.route as RoutePath);
+                    } else {
+                      setQuery(item.term);
+                      saveRecentSearch(item.term);
+                    }
                   }}
                   className="p-3 rounded-xl bg-black/60 hover:bg-[#830000]/20 border border-neutral-800 hover:border-[#BC0202]/60 text-left transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
                 >
                   <div className="flex items-center justify-between gap-1 mb-1.5">
                     <span className="text-[10px] font-mono text-neutral-500 font-bold group-hover:text-neutral-300">
-                      #{idx + 1}
+                      #{item.rank || idx + 1}
                     </span>
-                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25">
-                      {item.tag}
+                    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-[#FF0000]/15 text-[#ff7272] border border-[#FF0000]/25 truncate max-w-[120px]">
+                      {item.sourceBadge || item.tag}
                     </span>
                   </div>
                   <p className="text-xs font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">
