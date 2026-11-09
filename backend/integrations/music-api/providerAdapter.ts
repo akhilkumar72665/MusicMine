@@ -409,7 +409,8 @@ export function normalizeUpstreamItem(raw: any): Track {
 
   const safeArtistId = `art-${uploader.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'various'}`;
   const safeAlbumId = `alb-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'single'}`;
-  const audioStreamUrl = `/api/v1/audio/stream?id=${providerId}&q=${encodeURIComponent(rawTitle)}`;
+  const effectiveKey = cachedApiKey || DEFAULT_NAZRIYA_API_KEY;
+  const audioStreamUrl = `${UPSTREAM_BASE_URL}/api/audio?q=${encodeURIComponent(cleanTitle || rawTitle)}&key=${effectiveKey}`;
 
   return {
     id: `trk-${providerId}`,

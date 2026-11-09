@@ -18,38 +18,43 @@ let activeSearchController: AbortController | null = null;
 
 function parseRawListToTracks(rawList: any[]): Track[] {
   return rawList.map((item: any) => {
-    if (item.cleanTitle && item.artistName && item.id) {
-      return {
-        ...item,
-        sourceApi: item.sourceApi || (item.providerId?.startsWith('svn-') ? 'JioSaavn' : item.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API'),
-      } as Track;
-    }
-    const rawTitle = String(item.title || 'Untitled Track');
-    const cleanTitle = rawTitle
+    const rawTitle = String(item.title || item.cleanTitle || 'Untitled Track');
+    const cleanTitle = (item.cleanTitle || rawTitle)
       .replace(/\|.*$/g, '')
       .replace(/\((Official|Full|Lyric|Video|Audio).*?\)/gi, '')
       .replace(/\[.*?\]/g, '')
       .replace(/-\s*(8K|4K|HD|Full).*$/gi, '')
       .trim();
-    const uploader = item.uploader || 'Featured Artist';
-    const providerId = String(item.id || item.providerId || '');
+    const uploader = item.artistName || item.uploader || 'Featured Artist';
+    const providerId = String(item.providerId || item.id || '');
     const thumbnail =
       item.thumbnail ||
       item.thumbnailUrl ||
       (providerId.length === 11 ? `https://i.ytimg.com/vi/${providerId}/hqdefault.jpg` : undefined);
-    const streamUrl =
-      item.streamUrl ||
-      `${UPSTREAM_API_BASE}/api/audio?q=${encodeURIComponent(cleanTitle || rawTitle)}&key=${UPSTREAM_API_KEY}`;
+
+    let streamUrl = item.streamUrl;
+    if (!streamUrl || !/^https?:\/\//i.test(streamUrl) || streamUrl.includes('/api/v1/audio/stream') || streamUrl.includes('/api/audio/stream')) {
+      const q = encodeURIComponent(cleanTitle || rawTitle);
+      streamUrl = `${UPSTREAM_API_BASE}/api/audio?q=${q}&key=${UPSTREAM_API_KEY}`;
+    }
+
+    if (item.cleanTitle && item.artistName && item.id) {
+      return {
+        ...item,
+        streamUrl,
+        sourceApi: item.sourceApi || (item.providerId?.startsWith('svn-') ? 'JioSaavn' : item.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API'),
+      } as Track;
+    }
 
     return {
       id: item.id?.startsWith('trk-') ? item.id : `trk-${providerId}`,
       providerId,
-      title: rawTitle,
+      title: item.title || rawTitle,
       cleanTitle: cleanTitle || rawTitle,
-      artistId: `art-${uploader.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32) || 'various'}`,
+      artistId: item.artistId || `art-${uploader.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32) || 'various'}`,
       artistName: uploader,
-      albumId: `alb-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32) || 'single'}`,
-      albumName: cleanTitle || 'Single Release',
+      albumId: item.albumId || `alb-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32) || 'single'}`,
+      albumName: item.albumName || cleanTitle || 'Single Release',
       duration: typeof item.duration === 'number' ? item.duration : 210,
       uploader,
       language: item.language || 'Hindi',
@@ -58,7 +63,7 @@ function parseRawListToTracks(rawList: any[]): Track[] {
       thumbnailUrl: thumbnail,
       externalUrl: item.url || item.externalUrl,
       streamUrl,
-      sourceType: 'API_CONTRACT_SAMPLE',
+      sourceType: item.sourceType || 'API_CONTRACT_SAMPLE',
       visibleInCatalog: true,
       sourceApi: item.sourceApi || (providerId.startsWith('svn-') ? 'JioSaavn' : providerId.startsWith('itu-') ? 'iTunes' : 'Nazriya API'),
     };

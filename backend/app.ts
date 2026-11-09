@@ -146,10 +146,23 @@ export function createExpressApp() {
       const artist = typeof req.query.artist === 'string' ? req.query.artist : undefined;
       const directParam = typeof req.query.streamUrl === 'string' ? req.query.streamUrl : undefined;
 
+      const isSelfUrl = (url?: string | null): boolean => {
+        if (!url) return true;
+        if (!/^https?:\/\//i.test(url)) return true;
+        if (url.includes('/api/v1/audio/stream') || url.includes('/api/audio/stream')) return true;
+        return false;
+      };
+
       const knownTrack = serverTracks.find(
         (t) => (providerId && t.providerId === providerId) || (title && t.cleanTitle === title)
       );
-      let targetStreamUrl = directParam || knownTrack?.streamUrl || null;
+
+      let targetStreamUrl: string | null = null;
+      if (directParam && !isSelfUrl(directParam)) {
+        targetStreamUrl = directParam;
+      } else if (knownTrack?.streamUrl && !isSelfUrl(knownTrack.streamUrl)) {
+        targetStreamUrl = knownTrack.streamUrl;
+      }
 
       if (!targetStreamUrl) {
         targetStreamUrl = await resolveFastDirectStreamUrl({
@@ -158,15 +171,32 @@ export function createExpressApp() {
           title,
           artist,
         });
-        if (targetStreamUrl && knownTrack) {
-          knownTrack.streamUrl = targetStreamUrl;
+        if (targetStreamUrl && isSelfUrl(targetStreamUrl)) {
+          targetStreamUrl = null;
         }
       }
 
-      if (targetStreamUrl) {
-        // Direct CDN 302 redirect: zero server buffering overhead, instant byte-range audio playback
+      if (!targetStreamUrl) {
+        // Direct Nazriya audio or FLAC endpoint with zero buffer
+        const isFlac = req.path?.includes('flac') || req.originalUrl?.includes('flac');
+        const searchQ =
+          query && query.startsWith('http')
+            ? query
+            : providerId && !providerId.startsWith('svn-') && providerId.length === 11
+              ? `https://youtu.be/${providerId}`
+              : (title ? `${title} ${artist || ''}`.trim() : query) || 'aaj ki raat';
+        const apiKey = process.env.MUSIC_API_KEY || 'nz_bcfe4849cb48f9180f389852';
+        const endpoint = isFlac ? '/api/flac' : '/api/audio';
+        targetStreamUrl = `https://nazriya.musicmine.in${endpoint}?q=${encodeURIComponent(searchQ)}&key=${apiKey}`;
+      }
+
+      if (targetStreamUrl && !isSelfUrl(targetStreamUrl)) {
+        if (knownTrack) {
+          knownTrack.streamUrl = targetStreamUrl;
+        }
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range, Authorization');
         res.redirect(302, targetStreamUrl);
         return;
       }

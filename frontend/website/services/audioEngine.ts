@@ -661,10 +661,22 @@ class MusicMineAudioEngine {
   }
 
   private buildStreamUrl(track: Track): string {
-    // If track already has a direct valid CDN stream URL (e.g. JioSaavn CDN), stream it directly with 0ms latency
-    if (track.streamUrl && /^https?:\/\//i.test(track.streamUrl)) {
+    // If track already has a direct valid CDN stream URL (e.g. JioSaavn CDN or Nazriya API), stream it directly with 0ms latency
+    if (
+      track.streamUrl &&
+      /^https?:\/\//i.test(track.streamUrl) &&
+      !track.streamUrl.includes('/api/v1/audio/stream') &&
+      !track.streamUrl.includes('/api/audio/stream')
+    ) {
       return track.streamUrl;
     }
+
+    // Direct fallback to Nazriya Audio stream if search query is available
+    const q = track.cleanTitle || track.title;
+    if (q) {
+      return `https://nazriya.musicmine.in/api/audio?q=${encodeURIComponent(q)}&key=nz_bcfe4849cb48f9180f389852`;
+    }
+
     const params = new URLSearchParams();
     params.set('id', track.providerId);
     params.set(
@@ -673,9 +685,6 @@ class MusicMineAudioEngine {
     );
     params.set('title', track.cleanTitle);
     params.set('artist', track.artistName);
-    if (track.streamUrl) {
-      params.set('streamUrl', track.streamUrl);
-    }
     return `/api/v1/audio/stream?${params.toString()}`;
   }
 
