@@ -173,17 +173,28 @@ class MusicMineAudioEngine {
   private initAudioElement() {
     if (this.audio) return;
     const el = new Audio();
-    el.crossOrigin = 'anonymous';
+    // Do NOT set el.crossOrigin = 'anonymous' by default!
+    // Native HTML5 <audio> without crossOrigin attribute plays 100% of all audio streams
+    // across all origins without any CORS restrictions or browser blocking.
     el.preload = 'auto';
     el.volume = this.volume;
     el.muted = this.muted;
     el.playbackRate = this.playbackRate;
+    el.style.display = 'none';
+    if (typeof document !== 'undefined' && document.body) {
+      try {
+        document.body.appendChild(el);
+      } catch { }
+    }
 
     el.addEventListener('loadstart', () => {
-      if (this.isPlaying) {
-        this.isBuffering = true;
-        this.emit();
-      }
+      this.isBuffering = true;
+      this.emit();
+    });
+
+    el.addEventListener('loadeddata', () => {
+      this.isBuffering = false;
+      this.emit();
     });
 
     el.addEventListener('loadedmetadata', () => {
@@ -216,7 +227,9 @@ class MusicMineAudioEngine {
       this.isPlaying = true;
       this.isBuffering = false;
       this.statusMessage = null;
-      this.ensureWebAudioGraph();
+      if (this.eqEnabled) {
+        this.ensureWebAudioGraph();
+      }
       this.emit();
     });
 
@@ -256,23 +269,8 @@ class MusicMineAudioEngine {
     });
 
     el.addEventListener('error', () => {
-      // Fallback: If crossOrigin causes a streaming block on mobile browsers, retry directly without crossOrigin restriction
-      if (this.audio && this.audio.crossOrigin) {
-        console.warn('[AudioEngine] CrossOrigin playback error, retrying directly without crossOrigin restriction...');
-        const currentSrc = this.audio.src;
-        this.audio.removeAttribute('crossOrigin');
-        this.audio.crossOrigin = null;
-        this.audio.src = currentSrc;
-        this.audio.load();
-        this.audio.play().catch((err) => {
-          console.warn('[AudioEngine] Direct playback retry also failed:', err);
-          this.isPlaying = false;
-          this.isBuffering = false;
-          this.statusMessage = 'Unable to stream this track right now.';
-          this.emit();
-        });
-        return;
-      }
+      const err = el.error;
+      console.warn('[AudioEngine] Playback error code:', err?.code, err?.message);
       this.isPlaying = false;
       this.isBuffering = false;
       this.statusMessage = 'Unable to stream this track right now.';
@@ -283,7 +281,7 @@ class MusicMineAudioEngine {
   }
 
   private ensureWebAudioGraph() {
-    if (typeof window === 'undefined' || !this.audio) return;
+    if (typeof window === 'undefined' || !this.audio || !this.eqEnabled) return;
     try {
       if (!this.audioCtx) {
         const AudioCtx =
@@ -298,80 +296,83 @@ class MusicMineAudioEngine {
       }
 
       if (!this.mediaSourceConnected && this.audioCtx) {
-        const source = this.audioCtx.createMediaElementSource(this.audio);
+        try {
+          const source = this.audioCtx.createMediaElementSource(this.audio);
 
-        // 1. Sub-Woofer 55Hz Harmonic Punch (Mega Bass)
-        const subWoofer = this.audioCtx.createBiquadFilter();
-        subWoofer.type = 'peaking';
-        subWoofer.frequency.value = 55;
-        subWoofer.Q.value = 1.35;
-        subWoofer.gain.value = this.eqEnabled && this.megaBassEnabled ? 7 : 0;
-        this.subWooferNode = subWoofer;
+          // 1. Sub-Woofer 55Hz Harmonic Punch (Mega Bass)
+          const subWoofer = this.audioCtx.createBiquadFilter();
+          subWoofer.type = 'peaking';
+          subWoofer.frequency.value = 55;
+          subWoofer.Q.value = 1.35;
+          subWoofer.gain.value = this.eqEnabled && this.megaBassEnabled ? 7 : 0;
+          this.subWooferNode = subWoofer;
 
-        // 2. Dedicated sub-bass boost shelf at 85Hz
-        const bassBoost = this.audioCtx.createBiquadFilter();
-        bassBoost.type = 'lowshelf';
-        bassBoost.frequency.value = 85;
-        bassBoost.gain.value = this.eqEnabled ? this.bassBoostDb : 0;
-        this.bassBoostNode = bassBoost;
+          // 2. Dedicated sub-bass boost shelf at 85Hz
+          const bassBoost = this.audioCtx.createBiquadFilter();
+          bassBoost.type = 'lowshelf';
+          bassBoost.frequency.value = 85;
+          bassBoost.gain.value = this.eqEnabled ? this.bassBoostDb : 0;
+          this.bassBoostNode = bassBoost;
 
-        // 3. 5-band Equalizer filter nodes
-        this.eqFilterNodes = this.eqBands.map((band, idx) => {
-          const filter = this.audioCtx!.createBiquadFilter();
-          filter.type =
-            idx === 0
-              ? 'lowshelf'
-              : idx === this.eqBands.length - 1
-                ? 'highshelf'
-                : 'peaking';
-          filter.frequency.value = band.frequency;
-          filter.Q.value = 1.1;
-          filter.gain.value = this.eqEnabled ? band.gainDb : 0;
-          return filter;
-        });
+          // 3. 5-band Equalizer filter nodes
+          this.eqFilterNodes = this.eqBands.map((band, idx) => {
+            const filter = this.audioCtx!.createBiquadFilter();
+            filter.type =
+              idx === 0
+                ? 'lowshelf'
+                : idx === this.eqBands.length - 1
+                  ? 'highshelf'
+                  : 'peaking';
+            filter.frequency.value = band.frequency;
+            filter.Q.value = 1.1;
+            filter.gain.value = this.eqEnabled ? band.gainDb : 0;
+            return filter;
+          });
 
-        // 4. Studio Dynamics Compressor to keep heavy bass clean and punchy
-        const compressor = this.audioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -14;
-        compressor.knee.value = 18;
-        compressor.ratio.value = 3.5;
-        compressor.attack.value = 0.008;
-        compressor.release.value = 0.18;
-        this.compressorNode = compressor;
+          // 4. Studio Dynamics Compressor to keep heavy bass clean and punchy
+          const compressor = this.audioCtx.createDynamicsCompressor();
+          compressor.threshold.value = -14;
+          compressor.knee.value = 18;
+          compressor.ratio.value = 3.5;
+          compressor.attack.value = 0.008;
+          compressor.release.value = 0.18;
+          this.compressorNode = compressor;
 
-        // 5. 8D Spatial Stereo Panner
-        const stereoPanner = this.audioCtx.createStereoPanner
-          ? this.audioCtx.createStereoPanner()
-          : null;
-        if (stereoPanner) {
-          stereoPanner.pan.value = 0;
-          this.stereoPannerNode = stereoPanner;
+          // 5. 8D Spatial Stereo Panner
+          const stereoPanner = this.audioCtx.createStereoPanner
+            ? this.audioCtx.createStereoPanner()
+            : null;
+          if (stereoPanner) {
+            stereoPanner.pan.value = 0;
+            this.stereoPannerNode = stereoPanner;
+          }
+
+          // 6. Real-time Spectrum Analyser
+          const analyser = this.audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+          analyser.smoothingTimeConstant = 0.86;
+          this.analyserNode = analyser;
+          this.freqDataArray = new Uint8Array(analyser.frequencyBinCount);
+
+          source.connect(subWoofer);
+          subWoofer.connect(bassBoost);
+          let prevNode: AudioNode = bassBoost;
+          for (const filterNode of this.eqFilterNodes) {
+            prevNode.connect(filterNode);
+            prevNode = filterNode;
+          }
+          prevNode.connect(compressor);
+          if (stereoPanner) {
+            compressor.connect(stereoPanner);
+            stereoPanner.connect(analyser);
+          } else {
+            compressor.connect(analyser);
+          }
+          analyser.connect(this.audioCtx.destination);
+          this.mediaSourceConnected = true;
+        } catch (e) {
+          console.warn('[AudioEngine] Web Audio connection bypassed for native audio output:', e);
         }
-
-        // 6. Real-time Spectrum Analyser
-        const analyser = this.audioCtx.createAnalyser();
-        analyser.fftSize = 64;
-        analyser.smoothingTimeConstant = 0.86;
-        this.analyserNode = analyser;
-        this.freqDataArray = new Uint8Array(analyser.frequencyBinCount);
-
-        // Chain: source -> subWoofer -> bassBoost -> 5-band EQ -> compressor -> stereoPanner -> analyser -> destination
-        source.connect(subWoofer);
-        subWoofer.connect(bassBoost);
-        let prevNode: AudioNode = bassBoost;
-        for (const filterNode of this.eqFilterNodes) {
-          prevNode.connect(filterNode);
-          prevNode = filterNode;
-        }
-        prevNode.connect(compressor);
-        if (stereoPanner) {
-          compressor.connect(stereoPanner);
-          stereoPanner.connect(analyser);
-        } else {
-          compressor.connect(analyser);
-        }
-        analyser.connect(this.audioCtx.destination);
-        this.mediaSourceConnected = true;
       }
     } catch {
       // Fallback gracefully if Web Audio connection is restricted
@@ -403,6 +404,9 @@ class MusicMineAudioEngine {
 
   public setEqEnabled(enabled: boolean) {
     this.eqEnabled = enabled;
+    if (enabled) {
+      this.ensureWebAudioGraph();
+    }
     this.syncFilterNodes();
     this.emit();
   }
@@ -722,30 +726,21 @@ class MusicMineAudioEngine {
       this.audio.muted = this.muted;
       if (autoPlay) {
         this.isBuffering = true;
-        this.ensureWebAudioGraph();
         this.emit();
         const playPromise = this.audio.play();
         if (playPromise !== undefined) {
-          playPromise.catch((err) => {
-            console.warn('[AudioEngine] Play rejected:', err);
-            if (this.audio && this.audio.crossOrigin) {
-              console.warn('[AudioEngine] Retrying with crossOrigin removed...');
-              const currentSrc = this.audio.src;
-              this.audio.removeAttribute('crossOrigin');
-              this.audio.crossOrigin = null;
-              this.audio.src = currentSrc;
-              this.audio.load();
-              this.audio.play().catch(() => {
-                this.isPlaying = false;
-                this.isBuffering = false;
-                this.emit();
-              });
-              return;
-            }
-            this.isPlaying = false;
-            this.isBuffering = false;
-            this.emit();
-          });
+          playPromise
+            .then(() => {
+              this.isPlaying = true;
+              this.isBuffering = false;
+              this.emit();
+            })
+            .catch((err) => {
+              console.warn('[AudioEngine] Play rejected:', err);
+              this.isPlaying = false;
+              this.isBuffering = false;
+              this.emit();
+            });
         }
       } else {
         this.isPlaying = false;
@@ -765,32 +760,23 @@ class MusicMineAudioEngine {
     if (!this.audio.src) {
       this.audio.src = this.buildStreamUrl(this.currentTrack);
     }
-    this.ensureWebAudioGraph();
     this.isBuffering = true;
     this.statusMessage = null;
     this.emit();
     const playPromise = this.audio.play();
     if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.warn('[AudioEngine] Play rejected:', err);
-        if (this.audio && this.audio.crossOrigin) {
-          console.warn('[AudioEngine] Retrying play with crossOrigin removed...');
-          const currentSrc = this.audio.src;
-          this.audio.removeAttribute('crossOrigin');
-          this.audio.crossOrigin = null;
-          this.audio.src = currentSrc;
-          this.audio.load();
-          this.audio.play().catch(() => {
-            this.isPlaying = false;
-            this.isBuffering = false;
-            this.emit();
-          });
-          return;
-        }
-        this.isPlaying = false;
-        this.isBuffering = false;
-        this.emit();
-      });
+      playPromise
+        .then(() => {
+          this.isPlaying = true;
+          this.isBuffering = false;
+          this.emit();
+        })
+        .catch((err) => {
+          console.warn('[AudioEngine] Play rejected:', err);
+          this.isPlaying = false;
+          this.isBuffering = false;
+          this.emit();
+        });
     }
   }
 
