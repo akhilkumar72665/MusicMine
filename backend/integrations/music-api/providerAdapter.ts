@@ -682,39 +682,38 @@ export async function searchMusicCatalog(
     };
   }
 
-  // 1. Primary: Nazriya custom API (your main song provider)
-  const nazriyaTracks = await fetchNazriyaSearch(sanitized, 8000);
-
-  if (nazriyaTracks.length > 0) {
-    searchResultsCache.set(qLower, { tracks: nazriyaTracks, cachedAt: Date.now() });
-    return {
-      requestId,
-      query: sanitized,
-      tracks: nazriyaTracks,
-      upstreamReachable: true,
-    };
-  }
-
-  // 2. Fallback only if Nazriya returns 0 results: JioSaavn & iTunes
-  const [fastDirectTracks, itunesTracks] = await Promise.all([
+  // Parallel multi-source fetch: Nazriya API + JioSaavn direct + Apple iTunes
+  const [nazriyaTracks, fastDirectTracks, itunesTracks] = await Promise.all([
+    fetchNazriyaSearch(sanitized, 8000),
     searchFastDirectCatalog(sanitized),
     searchItunesCatalog(sanitized),
   ]);
 
   const mergedMap = new Map<string, Track>();
+
+  // 1. Nazriya tracks
+  for (const item of nazriyaTracks) {
+    mergedMap.set(item.providerId, { ...item, sourceApi: item.sourceApi || 'Nazriya API' });
+  }
+
+  // 2. JioSaavn direct CDN tracks
   for (const item of fastDirectTracks) {
     if (!mergedMap.has(item.providerId)) {
-      mergedMap.set(item.providerId, item);
+      mergedMap.set(item.providerId, { ...item, sourceApi: item.sourceApi || 'JioSaavn' });
     }
   }
-  for (const item of localMatches) {
-    if (!mergedMap.has(item.providerId)) {
-      mergedMap.set(item.providerId, item);
-    }
-  }
+
+  // 3. Apple iTunes tracks
   for (const item of itunesTracks) {
     if (!mergedMap.has(item.providerId)) {
-      mergedMap.set(item.providerId, item);
+      mergedMap.set(item.providerId, { ...item, sourceApi: item.sourceApi || 'iTunes' });
+    }
+  }
+
+  // 4. Local catalog matches
+  for (const item of localMatches) {
+    if (!mergedMap.has(item.providerId)) {
+      mergedMap.set(item.providerId, { ...item, sourceApi: item.sourceApi || 'MusicMine Catalog' });
     }
   }
 

@@ -115,26 +115,53 @@ export async function fetchSearchTracks(query: string): Promise<Track[] | null> 
     }
 
     // 2. If local backend returned 0 tracks or failed (e.g. on Vercel deployment where serverless timed out or has no env vars):
-    // Fallback directly to Upstream Nazriya Music API (which has full CORS enabled)
+    // Fallback directly to Upstream Nazriya Music API + Apple iTunes (which have full CORS enabled)
     if (foundTracks.length === 0) {
       try {
         const directUrl = normalized
           ? `${UPSTREAM_API_BASE}/api/search?q=${encodeURIComponent(query)}&key=${UPSTREAM_API_KEY}`
           : `${UPSTREAM_API_BASE}/api/trending?n=25&key=${UPSTREAM_API_KEY}`;
-        const directRes = await fetch(directUrl, { signal: controller.signal });
-        if (directRes.ok) {
+        const itunesUrl = normalized
+          ? `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`
+          : null;
+
+        const [directRes, itunesRes] = await Promise.all([
+          fetch(directUrl, { signal: controller.signal }).catch(() => null),
+          itunesUrl ? fetch(itunesUrl, { signal: controller.signal }).catch(() => null) : Promise.resolve(null),
+        ]);
+
+        let rawList: any[] = [];
+        if (directRes && directRes.ok) {
           const directJson: any = await directRes.json();
-          let rawList: any[] = [];
-          if (Array.isArray(directJson)) {
-            rawList = directJson;
-          } else if (directJson && Array.isArray(directJson.data)) {
-            rawList = directJson.data;
-          } else if (directJson && Array.isArray(directJson.results)) {
-            rawList = directJson.results;
+          const items = Array.isArray(directJson)
+            ? directJson
+            : directJson?.data || directJson?.results || [];
+          for (const item of items) {
+            rawList.push({ ...item, sourceApi: 'Nazriya API' });
           }
-          if (rawList.length > 0) {
-            foundTracks = parseRawListToTracks(rawList);
+        }
+
+        if (itunesRes && itunesRes.ok) {
+          const itunesJson: any = await itunesRes.json();
+          const itunesItems = Array.isArray(itunesJson?.results) ? itunesJson.results : [];
+          for (const it of itunesItems) {
+            rawList.push({
+              id: `itu-${it.trackId}`,
+              providerId: `itu-${it.trackId}`,
+              title: it.trackName,
+              cleanTitle: it.trackName,
+              artistName: it.artistName,
+              albumName: it.collectionName,
+              duration: Math.round((it.trackTimeMillis || 210000) / 1000),
+              thumbnail: it.artworkUrl100?.replace('100x100bb', '600x600bb'),
+              streamUrl: it.previewUrl,
+              sourceApi: 'iTunes',
+            });
           }
+        }
+
+        if (rawList.length > 0) {
+          foundTracks = parseRawListToTracks(rawList);
         }
       } catch (e: any) {
         if (e?.name === 'AbortError') throw e;
