@@ -157,11 +157,11 @@ export const INITIAL_TRACKS: Track[] = [
   {
     id: 'trk-svn-QcfFd62t',
     providerId: 'svn-QcfFd62t',
-    title: 'Tu Mil Jaaye (From "KING") - Sachin-Jigar, Ed Sheeran, Arijit Singh',
+    title: 'Tu Mil Jaaye (From "KING") - Sachin-Jigar, Arijit Singh',
     cleanTitle: 'Tu Mil Jaaye (From "KING")',
     artistId: 'art-sachin-jigar',
-    artistName: 'Sachin-Jigar, Ed Sheeran, Arijit Singh',
-    featuredArtists: ['Ed Sheeran', 'Arijit Singh', 'Madhubanti Bagchi'],
+    artistName: 'Sachin-Jigar, Arijit Singh',
+    featuredArtists: ['Arijit Singh', 'Madhubanti Bagchi'],
     albumId: 'alb-king-2026',
     albumName: 'KING (Original Motion Picture Soundtrack)',
     duration: 215,
@@ -204,8 +204,8 @@ export const INITIAL_TRACKS: Track[] = [
     albumName: 'Casa Tupka Anthemo',
     duration: 188,
     uploader: 'T-Series',
-    language: 'Punjabi',
-    genre: 'Punjabi Pop',
+    language: 'Hindi',
+    genre: 'Bollywood Pop',
     releaseYear: 2026,
     thumbnailUrl: 'https://c.saavncdn.com/786/Casa-Tupka-Anthemo-Hindi-2026-20260917173352-500x500.jpg',
     streamUrl: 'https://aac.saavncdn.com/786/2f7463095ed2bfab1274c018551b00a2_160.mp4',
@@ -608,82 +608,11 @@ export function getEmailAvatarUrl(email?: string, name?: string): string {
   return `https://unavatar.io/${encodeURIComponent(cleanEmail)}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${seed}&backgroundColor=bc0202,830000,000000&textColor=ffffff`;
 }
 
-export const INITIAL_USERS: UserAccount[] = [
-  {
-    id: 'usr-admin',
-    email: 'admin@musicmine.app',
-    displayName: 'Admin User',
-    username: 'admin',
-    bio: 'MusicMine Catalog Administrator.',
-    role: 'super_admin',
-    authProvider: 'email',
-    emailVerified: true,
-    status: 'active',
-    privateHistory: true,
-    publicProfile: false,
-    avatarUrl: getEmailAvatarUrl('admin@musicmine.app', 'Admin User'),
-    createdAt: '2026-10-15T09:00:00Z',
-  },
-  {
-    id: 'usr-meera',
-    email: 'meera.nair@example.in',
-    displayName: 'Meera Nair',
-    username: 'meeranair',
-    bio: 'Bollywood and Tamil soundtrack enthusiast.',
-    role: 'listener',
-    authProvider: 'email',
-    emailVerified: true,
-    status: 'active',
-    privateHistory: true,
-    publicProfile: true,
-    avatarUrl: getEmailAvatarUrl('meera.nair@example.in', 'Meera Nair'),
-    createdAt: '2026-10-21T11:30:00Z',
-  },
-];
+export const INITIAL_USERS: UserAccount[] = [];
 
-export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
-  {
-    id: 'aud-01',
-    timestamp: '2026-11-07T08:30:12Z',
-    actorEmail: 'admin@musicmine.app',
-    actorRole: 'super_admin',
-    action: 'HOMEPAGE_SECTION_UPDATED',
-    targetType: 'homepage',
-    targetId: 'sec-trending-india',
-    summary: 'Updated Trending Now section order on homepage',
-  },
-  {
-    id: 'aud-02',
-    timestamp: '2026-11-06T18:14:40Z',
-    actorEmail: 'admin@musicmine.app',
-    actorRole: 'super_admin',
-    action: 'CATALOG_SYNC',
-    targetType: 'catalog',
-    targetId: 'trk-ri1Ar5nEq4s',
-    summary: 'Verified catalog metadata for Aaj Ki Raat',
-  },
-];
+export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [];
 
-export const INITIAL_REPORTS: ContentReport[] = [
-  {
-    id: 'rep-01',
-    trackId: 'trk-ri1Ar5nEq4s',
-    trackTitle: 'Aaj Ki Raat (Stree 2)',
-    reason: 'copyright_claim',
-    reporterEmail: 'rights@saregama.com',
-    submittedAt: '2026-11-07T06:00:00Z',
-    status: 'investigating',
-  },
-  {
-    id: 'rep-02',
-    trackId: 'trk-KUN5Uf9mObQ',
-    trackTitle: 'Arabic Kuthu (Halamithi Habibo)',
-    reason: 'metadata_mismatch',
-    reporterEmail: 'listener@musicmine.app',
-    submittedAt: '2026-11-05T19:22:00Z',
-    status: 'open',
-  },
-];
+export const INITIAL_REPORTS: ContentReport[] = [];
 
 export function formatDuration(seconds: number): string {
   const safe = Math.max(0, Math.floor(seconds));
@@ -710,7 +639,7 @@ export const TRENDING_SEARCH_ITEMS: TrendingSearchItem[] = [
     category: 'song',
     source: 'Spotify',
     sourceBadge: 'India Top 50 #1 · 2026',
-    subtitle: 'KING · Sachin-Jigar, Ed Sheeran, Arijit Singh',
+    subtitle: 'KING · Sachin-Jigar, Arijit Singh',
     tag: '⚡ New Release 2026',
     rank: 1,
   },

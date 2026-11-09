@@ -549,24 +549,40 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </section>
       )}
 
-      {/* Category Filter Chips Matching Reference Image image_1ed3f949.png */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar select-none">
-        {categoryFilters.map((cat) => {
-          const isActive = activeCategory === cat;
-          return (
+      {/* Category Filter Chips */}
+      <div className="space-y-2 pt-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+            Browse by Mood &amp; Genre
+          </span>
+          {activeCategory !== 'All' && (
             <button
-              key={cat}
               type="button"
-              onClick={() => setActiveCategory(activeCategory === cat ? 'All' : cat)}
-              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${isActive
-                ? 'bg-white text-black shadow'
-                : 'bg-[#121212] hover:bg-[#1a1a1a] text-neutral-300 hover:text-white border border-neutral-800/80'
-                }`}
+              onClick={() => setActiveCategory('All')}
+              className="text-xs text-[#FF0000] hover:underline cursor-pointer font-medium"
             >
-              {cat}
+              Reset to All
             </button>
-          );
-        })}
+          )}
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar select-none">
+          {categoryFilters.map((cat) => {
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActiveCategory(activeCategory === cat ? 'All' : cat)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${isActive
+                  ? 'bg-white text-black shadow'
+                  : 'bg-[#121212] hover:bg-[#1a1a1a] text-neutral-300 hover:text-white border border-neutral-800/80'
+                  }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Quick Play Mix (6 distinct tracks) */}
@@ -608,11 +624,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       className="w-14 h-14 shrink-0 rounded-l-xl"
                     />
                     <div className="min-w-0 flex-1 py-2">
-                      <p className="text-sm font-semibold text-white group-hover:text-[#FF0000] truncate transition-colors">
+                      <p className="text-sm font-semibold text-white group-hover:text-[#FF0000] line-clamp-1 transition-colors">
                         {track.cleanTitle}
                       </p>
-                      <p className="text-xs text-neutral-400 truncate mt-0.5">
-                        {track.artistName}
+                      <p className="text-xs text-neutral-400 line-clamp-1 mt-0.5 flex items-center gap-1.5">
+                        <span className="truncate">{track.artistName}</span>
+                        <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-neutral-900 border border-neutral-800 text-neutral-400 shrink-0">
+                          {track.sourceApi || (track.providerId?.startsWith('svn-') ? 'JioSaavn' : track.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
+                        </span>
                       </p>
                     </div>
                   </button>

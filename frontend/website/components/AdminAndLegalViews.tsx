@@ -25,7 +25,7 @@ import {
   UserAccount,
   UserRole,
 } from '../../../shared/types/music';
-import { formatDuration, getEmailAvatarUrl, INITIAL_USERS } from '../data/catalogFixtures';
+import { formatDuration, getEmailAvatarUrl } from '../data/catalogFixtures';
 
 interface AuthViewProps {
   mode: 'login' | 'signup';
@@ -65,12 +65,7 @@ export const AuthView: React.FC<AuthViewProps> = ({
     }
     const inferredName =
       displayName.trim() || email.trim().split('@')[0] || 'Music Listener';
-    const role: UserRole =
-      email.toLowerCase().trim() === 'admin@musicmine.app' ||
-        email.toLowerCase().startsWith('admin@')
-        ? 'super_admin'
-        : 'listener';
-    onLoginEmail(email.trim(), inferredName, role);
+    onLoginEmail(email.trim(), inferredName, 'listener');
   };
 
   const handleGoogleSubmit = (e: React.FormEvent) => {
@@ -278,64 +273,15 @@ export const AuthView: React.FC<AuthViewProps> = ({
           </button>
         </form>
 
-        {/* 1-Click Fast Demo Accounts */}
-        <div className="pt-5 border-t border-neutral-800/80 space-y-3">
-          <div className="flex items-center justify-between text-xs text-neutral-400">
-            <span className="font-semibold uppercase tracking-wider text-neutral-400 text-[11px]">
-              Fast 1-Click Demo Accounts
-            </span>
-            <span className="text-neutral-500">For testing</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {/* Listener Demo Account */}
-            <button
-              type="button"
-              onClick={() => onLoginDemo(INITIAL_USERS[1])}
-              className="p-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-800 hover:border-neutral-700 text-left transition-all cursor-pointer group flex items-center gap-3"
-            >
-              <div className="w-9 h-9 rounded-full bg-[#BC0202]/20 border border-[#BC0202]/40 text-[#ff7272] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <Headphones className="w-4 h-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold text-white group-hover:text-[#FF0000] truncate">
-                    {INITIAL_USERS[1].displayName}
-                  </p>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
-                    Listener
-                  </span>
-                </div>
-                <p className="text-[10px] text-neutral-400 truncate mt-0.5">
-                  {INITIAL_USERS[1].email}
-                </p>
-              </div>
-            </button>
-
-            {/* Super Admin Demo Account */}
-            <button
-              type="button"
-              onClick={() => onLoginDemo(INITIAL_USERS[0])}
-              className="p-3 rounded-xl bg-neutral-900/90 hover:bg-neutral-800 border border-neutral-800 hover:border-[#BC0202]/50 text-left transition-all cursor-pointer group flex items-center gap-3"
-            >
-              <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <Shield className="w-4 h-4" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold text-white group-hover:text-amber-400 truncate">
-                    {INITIAL_USERS[0].displayName}
-                  </p>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 font-mono">
-                    Super Admin
-                  </span>
-                </div>
-                <p className="text-[10px] text-neutral-400 truncate mt-0.5">
-                  {INITIAL_USERS[0].email}
-                </p>
-              </div>
-            </button>
-          </div>
+        {/* Guest Mode Action */}
+        <div className="pt-4 border-t border-neutral-800/80">
+          <button
+            type="button"
+            onClick={onContinueGuest}
+            className="w-full py-2.5 rounded-xl bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-xs text-neutral-300 hover:text-white font-medium transition-colors cursor-pointer"
+          >
+            Continue as Guest Listener (No Sign-in Required)
+          </button>
         </div>
 
         {/* Footer Actions */}

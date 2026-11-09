@@ -13,6 +13,7 @@ import {
   Library,
   ListMusic,
   Loader2,
+  Music,
   Pause,
   Play,
   Search,
@@ -89,19 +90,52 @@ function loadStoredJson<T>(key: string, fallback: T): T {
   }
 }
 
-export function MusicMineWebsiteApp() {
-  const [route, setRouteState] = useState<RoutePath>('/');
-  const [routeHistory, setRouteHistory] = useState<RoutePath[]>(['/']);
+function parseRouteFromLocation(): RoutePath {
+  if (typeof window === 'undefined') return '/';
 
-  const setRoute = useCallback((nextPath: RoutePath) => {
+  // 1. Support hash navigation (e.g. /#/admin, #/search, /#admin)
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#')) {
+    const cleanHash = hash.replace(/^#\/?/, '/').split('?')[0];
+    if (cleanHash && cleanHash !== '/') {
+      return cleanHash as RoutePath;
+    }
+  }
+
+  // 2. Support standard browser pathname navigation (e.g. /search, /library, /admin)
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  return path as RoutePath;
+}
+
+export function MusicMineWebsiteApp() {
+  const [route, setRouteState] = useState<RoutePath>(() => parseRouteFromLocation());
+  const [routeHistory, setRouteHistory] = useState<RoutePath[]>(() => [parseRouteFromLocation()]);
+
+  const setRoute = useCallback((nextPath: RoutePath, replace = false) => {
     setRouteState((prev) => {
       if (prev === nextPath) return prev;
       setRouteHistory((hist) => [...hist.slice(-24), nextPath]);
       return nextPath;
     });
+
+    if (typeof window !== 'undefined') {
+      try {
+        const currentPath = window.location.pathname;
+        const currentHash = window.location.hash;
+        if (replace) {
+          window.history.replaceState({ route: nextPath }, '', nextPath);
+        } else if (currentPath !== nextPath || (currentHash && currentHash !== `#${nextPath}`)) {
+          window.history.pushState({ route: nextPath }, '', nextPath);
+        }
+      } catch { }
+    }
   }, []);
 
   const handleGoBack = useCallback(() => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
     setRouteHistory((hist) => {
       if (hist.length > 1) {
         const nextHist = hist.slice(0, -1);
@@ -112,6 +146,24 @@ export function MusicMineWebsiteApp() {
       setRouteState('/');
       return ['/'];
     });
+  }, []);
+
+  // Sync route on browser back/forward buttons or hash change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleLocationChange = () => {
+      const detected = parseRouteFromLocation();
+      setRouteState(detected);
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
   }, []);
 
   const canGoBack = route !== '/' || routeHistory.length > 1;
@@ -971,7 +1023,7 @@ export function MusicMineWebsiteApp() {
                 setHeaderSearchFocused(true);
               }}
               onFocus={() => setHeaderSearchFocused(true)}
-              placeholder="Search songs, artists, soundtracks..."
+              placeholder="Search songs, artists..."
               aria-label="Search music catalog"
               className="w-full pl-11 sm:pl-12 pr-10 py-2.5 rounded-full bg-[#121212] hover:bg-[#171717] focus:bg-black border border-neutral-800/90 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-xs sm:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
             />
@@ -1456,7 +1508,7 @@ export function MusicMineWebsiteApp() {
                   setHeaderSearchQuery(e.target.value);
                   setHeaderSearchFocused(true);
                 }}
-                placeholder="Search songs, artists, soundtracks..."
+                placeholder="Search songs, artists..."
                 aria-label="Search music catalog"
                 className="w-full pl-11 pr-9 py-2.5 rounded-full bg-neutral-900 border border-neutral-800 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-sm text-white placeholder-neutral-400"
               />
@@ -2283,7 +2335,91 @@ export function MusicMineWebsiteApp() {
                 }}
               />
             )}
+            {/* 404 / Fallback for unknown routes */}
+            {route !== '/' &&
+              route !== '/search' &&
+              !route.startsWith('/track/') &&
+              !route.startsWith('/artist/') &&
+              !route.startsWith('/album/') &&
+              route !== '/library' &&
+              route !== '/playlists' &&
+              !route.startsWith('/playlist/') &&
+              route !== '/profile' &&
+              route !== '/settings' &&
+              route !== '/stats' &&
+              !route.startsWith('/library/') &&
+              route !== '/login' &&
+              route !== '/signup' &&
+              !route.startsWith('/admin') &&
+              route !== '/privacy' &&
+              route !== '/terms' &&
+              route !== '/copyright' &&
+              route !== '/help' && (
+                <div className="max-w-xl mx-auto py-16 px-4 text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-neutral-900 border border-neutral-800 text-[#FF0000] flex items-center justify-center mx-auto shadow-inner">
+                    <Music className="w-8 h-8" />
+                  </div>
+                  <h1 className="text-2xl font-display font-bold text-white">404 - Page Not Found</h1>
+                  <p className="text-sm text-neutral-400">
+                    The requested page <span className="font-mono text-neutral-200">"{route}"</span> does not exist or has moved.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setRoute('/')}
+                    className="px-6 py-2.5 rounded-full bg-[#BC0202] hover:bg-[#FF0000] text-white text-xs font-semibold transition-all cursor-pointer shadow"
+                  >
+                    Return to Homepage
+                  </button>
+                </div>
+              )}
           </StateBoundary>
+
+          {/* Sitewide Footer */}
+          <footer className="mt-16 pt-8 pb-24 lg:pb-12 border-t border-neutral-900 text-xs text-neutral-500 space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1 text-center sm:text-left">
+                <p className="font-semibold text-neutral-200 text-sm">MusicMine</p>
+                <p className="text-[11px] text-neutral-400">
+                  Music discovery and high definition streaming for Hindi, Punjabi, and South Indian releases.
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3 text-neutral-400 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setRoute('/privacy')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Privacy Policy
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => setRoute('/terms')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Terms of Service
+                </button>
+                <span>·</span>
+                <button
+                  type="button"
+                  onClick={() => setRoute('/copyright')}
+                  className="hover:text-white transition-colors cursor-pointer"
+                >
+                  Copyright Notice
+                </button>
+                <span>·</span>
+                <a
+                  href="mailto:support@musicmine.in"
+                  className="hover:text-white transition-colors"
+                >
+                  Contact &amp; Support
+                </a>
+              </div>
+            </div>
+            <div className="text-center sm:text-left text-[11px] text-neutral-400">
+              &copy; {new Date().getFullYear()} MusicMine. All rights reserved.
+            </div>
+          </footer>
         </main>
       </div>
 
