@@ -472,6 +472,10 @@ export async function fetchNazriyaSearch(query: string, timeoutMs = 8000): Promi
       rawList = payload.data;
     } else if (payload && typeof payload === 'object' && Array.isArray(payload.results)) {
       rawList = payload.results;
+    } else if (payload && typeof payload === 'object' && Array.isArray(payload.songs)) {
+      rawList = payload.songs;
+    } else if (payload && typeof payload === 'object' && Array.isArray(payload.songs)) {
+      rawList = payload.songs;
     } else if (payload && typeof payload === 'object' && 'id' in payload) {
       rawList = [payload];
     }
@@ -517,6 +521,8 @@ export async function fetchNazriyaTrending(n = 20): Promise<Track[]> {
       rawList = payload.data;
     } else if (payload && typeof payload === 'object' && Array.isArray(payload.results)) {
       rawList = payload.results;
+    } else if (payload && typeof payload === 'object' && Array.isArray(payload.songs)) {
+      rawList = payload.songs;
     }
     return rawList.map(normalizeUpstreamItem);
   } catch {

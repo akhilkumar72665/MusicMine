@@ -176,18 +176,32 @@ export function createExpressApp() {
         }
       }
 
+      // Fallback to Apple iTunes preview stream if JioSaavn was not found
+      if (!targetStreamUrl && (title || query)) {
+        try {
+          const itunesTerm = encodeURIComponent((title || query || '').trim());
+          const itunesRes = await fetch(`https://itunes.apple.com/search?term=${itunesTerm}&entity=song&limit=1`);
+          if (itunesRes.ok) {
+            const itunesData: any = await itunesRes.json();
+            const preview = itunesData?.results?.[0]?.previewUrl;
+            if (preview && typeof preview === 'string') {
+              targetStreamUrl = preview;
+            }
+          }
+        } catch { }
+      }
+
       if (!targetStreamUrl) {
         // Direct Nazriya audio or FLAC endpoint with zero buffer
         const isFlac = req.path?.includes('flac') || req.originalUrl?.includes('flac');
-        const searchQ =
-          query && query.startsWith('http')
-            ? query
-            : providerId && !providerId.startsWith('svn-') && providerId.length === 11
-              ? `https://youtu.be/${providerId}`
-              : (title ? `${title} ${artist || ''}`.trim() : query) || 'aaj ki raat';
+        const cleanSearch = (title || query || 'aaj ki raat')
+          .replace(/\|.*$/g, '')
+          .replace(/\((Official|Full|Lyric|Video|Audio).*?\)/gi, '')
+          .replace(/\[.*?\]/g, '')
+          .trim();
         const apiKey = process.env.MUSIC_API_KEY || 'nz_bcfe4849cb48f9180f389852';
         const endpoint = isFlac ? '/api/flac' : '/api/audio';
-        targetStreamUrl = `https://nazriya.musicmine.in${endpoint}?q=${encodeURIComponent(searchQ)}&key=${apiKey}`;
+        targetStreamUrl = `https://nazriya.musicmine.in${endpoint}?q=${encodeURIComponent(cleanSearch)}&key=${apiKey}`;
       }
 
       if (targetStreamUrl && !isSelfUrl(targetStreamUrl)) {

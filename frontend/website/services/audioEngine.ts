@@ -268,9 +268,45 @@ class MusicMineAudioEngine {
       }
     });
 
-    el.addEventListener('error', () => {
+    let isRetryingFallback = false;
+
+    el.addEventListener('error', async () => {
       const err = el.error;
-      console.warn('[AudioEngine] Playback error code:', err?.code, err?.message);
+      console.warn('[AudioEngine] Playback error on src:', el.src, 'code:', err?.code, err?.message);
+
+      // Automatic fallback if direct upstream stream was blocked or unavailable
+      if (this.currentTrack && !isRetryingFallback) {
+        isRetryingFallback = true;
+        this.statusMessage = 'Resolving alternate stream...';
+        this.emit();
+
+        const fallbackUrl = await this.resolveTrackFallbackStream(this.currentTrack);
+        if (fallbackUrl && fallbackUrl !== el.src) {
+          console.info('[AudioEngine] Switching to fallback stream:', fallbackUrl);
+          this.currentTrack.streamUrl = fallbackUrl;
+          el.src = fallbackUrl;
+          el.load();
+          el.play()
+            .then(() => {
+              isRetryingFallback = false;
+              this.isPlaying = true;
+              this.isBuffering = false;
+              this.statusMessage = null;
+              this.emit();
+            })
+            .catch((playErr) => {
+              console.warn('[AudioEngine] Fallback stream play error:', playErr);
+              isRetryingFallback = false;
+              this.isPlaying = false;
+              this.isBuffering = false;
+              this.statusMessage = 'Unable to stream this track right now.';
+              this.emit();
+            });
+          return;
+        }
+        isRetryingFallback = false;
+      }
+
       this.isPlaying = false;
       this.isBuffering = false;
       this.statusMessage = 'Unable to stream this track right now.';
@@ -278,6 +314,43 @@ class MusicMineAudioEngine {
     });
 
     this.audio = el;
+  }
+
+  private async resolveTrackFallbackStream(track: Track): Promise<string | null> {
+    const title = track.cleanTitle || track.title || '';
+    const artist = track.artistName || '';
+
+    // 1. Try local/backend stream resolver
+    try {
+      const res = await fetch(
+        `/api/v1/audio/stream?title=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`,
+        { method: 'GET', redirect: 'follow' }
+      );
+      if (
+        res.ok &&
+        res.url &&
+        !res.url.includes('/api/v1/audio/stream') &&
+        !res.url.includes('/api/audio/stream')
+      ) {
+        return res.url;
+      }
+    } catch { }
+
+    // 2. Try Apple iTunes preview direct API (works cross-origin everywhere)
+    try {
+      const itunesRes = await fetch(
+        `https://itunes.apple.com/search?term=${encodeURIComponent(title)}&entity=song&limit=1`
+      );
+      if (itunesRes.ok) {
+        const itunesData: any = await itunesRes.json();
+        const preview = itunesData?.results?.[0]?.previewUrl;
+        if (preview && typeof preview === 'string') {
+          return preview;
+        }
+      }
+    } catch { }
+
+    return null;
   }
 
   private ensureWebAudioGraph() {

@@ -140,7 +140,7 @@ export async function fetchSearchTracks(query: string): Promise<Track[] | null> 
           const directJson: any = await directRes.json();
           const items = Array.isArray(directJson)
             ? directJson
-            : directJson?.data || directJson?.results || [];
+            : directJson?.data || directJson?.results || directJson?.songs || [];
           for (const item of items) {
             rawList.push({ ...item, sourceApi: 'Nazriya API' });
           }
