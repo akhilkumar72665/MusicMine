@@ -942,7 +942,7 @@ export function MusicMineWebsiteApp() {
                 setHeaderSearchFocused(true);
               }}
               onFocus={() => setHeaderSearchFocused(true)}
-              placeholder="Search songs, artists..."
+              placeholder="Search songs, artists, soundtracks..."
               aria-label="Search music catalog"
               className="w-full pl-11 sm:pl-12 pr-10 py-2.5 rounded-full bg-[#121212] hover:bg-[#171717] focus:bg-black border border-neutral-800/90 focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000] focus:outline-none text-xs sm:text-sm text-white placeholder-neutral-400 transition-all shadow-inner"
             />
@@ -1374,13 +1374,18 @@ export function MusicMineWebsiteApp() {
               </span>
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => setRoute('/login')}
-              className="px-5 py-2 text-xs font-bold text-black bg-white hover:bg-neutral-200 rounded-full transition-colors whitespace-nowrap shadow cursor-pointer shrink-0"
-            >
-              Sign in
-            </button>
+            <div className="flex items-center gap-2.5">
+              <span className="hidden xl:inline text-[11px] text-neutral-400">
+                Free listening · Sign in to save
+              </span>
+              <button
+                type="button"
+                onClick={() => setRoute('/login')}
+                className="px-5 py-2 text-xs font-bold text-black bg-white hover:bg-neutral-200 rounded-full transition-colors whitespace-nowrap shadow cursor-pointer shrink-0"
+              >
+                Sign in
+              </button>
+            </div>
           )}
         </div>
       </header>
@@ -1887,21 +1892,26 @@ export function MusicMineWebsiteApp() {
                 <User className="w-4 h-4 shrink-0" />
                 <span>Profile</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setRoute('/admin')}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route.startsWith('/admin')
-                  ? 'bg-[#BC0202] text-white'
-                  : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
-                  }`}
-              >
-                <Shield className="w-4 h-4 shrink-0 text-[#FF0000]" />
-                <span>Admin</span>
-              </button>
+              {currentUser?.role === 'super_admin' && (
+                <button
+                  type="button"
+                  onClick={() => setRoute('/admin')}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${route.startsWith('/admin')
+                    ? 'bg-[#BC0202] text-white'
+                    : 'text-neutral-300 hover:bg-neutral-900 hover:text-white'
+                    }`}
+                >
+                  <Shield className="w-4 h-4 shrink-0 text-[#FF0000]" />
+                  <span>Admin</span>
+                </button>
+              )}
             </div>
           </div>
 
           <div className="pt-4 border-t border-neutral-800/80 space-y-2 text-[11px] text-neutral-500">
+            <p className="text-neutral-400 text-xs leading-relaxed">
+              Music discovery for Hindi, Punjabi, and South Indian releases.
+            </p>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -1926,8 +1936,16 @@ export function MusicMineWebsiteApp() {
               >
                 Copyright
               </button>
+              <span>·</span>
+              <button
+                type="button"
+                onClick={() => setRoute('/help')}
+                className="hover:text-neutral-300 cursor-pointer text-[#FF0000]"
+              >
+                Help &amp; Support
+              </button>
             </div>
-            <p className="text-neutral-600">© 2026 MusicMine</p>
+            <p className="text-neutral-600">© 2026 MusicMine · Free listening</p>
           </div>
         </aside>
 
@@ -2212,9 +2230,9 @@ export function MusicMineWebsiteApp() {
               />
             )}
 
-            {(route === '/privacy' || route === '/terms' || route === '/copyright') && (
+            {(route === '/privacy' || route === '/terms' || route === '/copyright' || route === '/help') && (
               <LegalView
-                page={route.replace('/', '') as 'privacy' | 'terms' | 'copyright'}
+                page={route.replace('/', '') as 'privacy' | 'terms' | 'copyright' | 'help'}
                 onSubmitCopyrightNotice={(trackTitle, claimantEmail) => {
                   const newRep: ContentReport = {
                     id: `rep-${Date.now()}`,

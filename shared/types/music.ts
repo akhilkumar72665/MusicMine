@@ -147,6 +147,7 @@ export type RoutePath =
   | '/privacy'
   | '/terms'
   | '/copyright'
+  | '/help'
   | '/library'
   | '/library/liked'
   | '/library/history'

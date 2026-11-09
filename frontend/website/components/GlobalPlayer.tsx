@@ -537,7 +537,7 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 NOW PLAYING
               </span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-neutral-400 font-mono hidden sm:inline-block">
-                320 KBPS
+                160 kbps AAC
               </span>
             </div>
 

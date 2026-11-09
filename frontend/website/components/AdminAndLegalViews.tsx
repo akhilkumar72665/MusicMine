@@ -122,7 +122,7 @@ export const AuthView: React.FC<AuthViewProps> = ({
             <p className="text-sm text-neutral-400 mt-1">
               {mode === 'login'
                 ? 'Sign in to access your personal liked songs, custom playlists, and listening history.'
-                : 'Join millions streaming ad-free music in 320kbps with real-time synchronized lyrics.'}
+                : 'Save your favorite tracks, build custom playlists, and sync across your devices.'}
             </p>
           </div>
         </div>
@@ -924,7 +924,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 };
 
 interface LegalViewProps {
-  page: 'privacy' | 'terms' | 'copyright';
+  page: 'privacy' | 'terms' | 'copyright' | 'help';
   onSubmitCopyrightNotice: (trackTitle: string, claimantEmail: string) => void;
 }
 
@@ -967,6 +967,42 @@ export const LegalView: React.FC<LegalViewProps> = ({ page, onSubmitCopyrightNot
               <li>Content streaming is provided in accordance with applicable licensing agreements.</li>
               <li>Browser-cached media is subject to device storage limits.</li>
             </ul>
+          </>
+        )}
+
+        {page === 'help' && (
+          <>
+            <h1 className="text-2xl font-display font-bold text-white">Help &amp; Support</h1>
+            <p className="text-sm text-neutral-300 leading-relaxed">
+              MusicMine is an editorial music discovery platform focused on Hindi, Punjabi, and South Indian cinema releases.
+            </p>
+            <div className="space-y-4 pt-2">
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-1">
+                <h3 className="text-sm font-semibold text-white">Do I need an account to listen?</h3>
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  No. Playback is free and instant without signing in. Creating a listener account allows you to save playlists, like songs, and synchronize your library across devices.
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-1">
+                <h3 className="text-sm font-semibold text-white">What audio quality is streamed?</h3>
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  MusicMine streams in stereo 160 kbps AAC, balanced for crisp audio fidelity and smooth background playback on mobile connections.
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-neutral-900/60 border border-neutral-800 space-y-1">
+                <h3 className="text-sm font-semibold text-white">How do I report an issue or suggest a song?</h3>
+                <p className="text-xs text-neutral-400 leading-relaxed">
+                  Contact our support team directly at{' '}
+                  <a
+                    href="mailto:support@musicmine.app"
+                    className="text-[#FF0000] hover:underline font-medium"
+                  >
+                    support@musicmine.app
+                  </a>
+                  . We review feedback and catalog requests daily.
+                </p>
+              </div>
+            </div>
           </>
         )}
 
