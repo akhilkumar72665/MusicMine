@@ -50,9 +50,56 @@ export async function fetchSearchTracks(query: string): Promise<Track[] | null> 
     }
 
     if (!res || !res.ok) return null;
-    const json = (await res.json()) as SearchApiResponse;
-    const tracks = Array.isArray(json.data) ? json.data : null;
-    if (tracks && tracks.length > 0) {
+    const json: any = await res.json();
+    let rawList: any[] = [];
+    if (Array.isArray(json)) {
+      rawList = json;
+    } else if (json && Array.isArray(json.data)) {
+      rawList = json.data;
+    } else if (json && Array.isArray(json.results)) {
+      rawList = json.results;
+    }
+
+    const tracks: Track[] = rawList.map((item: any) => {
+      if (item.cleanTitle && item.artistName && item.id) {
+        return item as Track;
+      }
+      const rawTitle = String(item.title || 'Untitled Track');
+      const cleanTitle = rawTitle
+        .replace(/\|.*$/g, '')
+        .replace(/\((Official|Full|Lyric|Video|Audio).*?\)/gi, '')
+        .replace(/\[.*?\]/g, '')
+        .replace(/-\s*(8K|4K|HD|Full).*$/gi, '')
+        .trim();
+      const uploader = item.uploader || 'Featured Artist';
+      const providerId = String(item.id || item.providerId || '');
+      const thumbnail =
+        item.thumbnail || item.thumbnailUrl || (providerId.length === 11 ? `https://i.ytimg.com/vi/${providerId}/hqdefault.jpg` : undefined);
+      const streamUrl = item.streamUrl || `/api/v1/audio/stream?id=${providerId}&q=${encodeURIComponent(rawTitle)}`;
+
+      return {
+        id: item.id?.startsWith('trk-') ? item.id : `trk-${providerId}`,
+        providerId,
+        title: rawTitle,
+        cleanTitle: cleanTitle || rawTitle,
+        artistId: `art-${uploader.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32) || 'various'}`,
+        artistName: uploader,
+        albumId: `alb-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32) || 'single'}`,
+        albumName: cleanTitle || 'Single Release',
+        duration: typeof item.duration === 'number' ? item.duration : 210,
+        uploader,
+        language: item.language || 'Hindi',
+        genre: item.genre || 'Bollywood',
+        releaseYear: item.releaseYear || new Date().getFullYear(),
+        thumbnailUrl: thumbnail,
+        externalUrl: item.url || item.externalUrl,
+        streamUrl,
+        sourceType: 'API_CONTRACT_SAMPLE',
+        visibleInCatalog: true,
+      };
+    });
+
+    if (tracks.length > 0) {
       clientSearchCache.set(cacheKey, tracks);
     }
     return tracks;

@@ -253,7 +253,7 @@ export async function fetchLiveTrendingCatalog(): Promise<Track[]> {
       cachedTrendingAt = now;
       return cachedTrendingTracks;
     }
-  } catch {}
+  } catch { }
 
   // 2. Fallback to direct JioSaavn Top Chart
   try {
@@ -387,7 +387,7 @@ async function provisionFreshNazriyaKey(): Promise<string | null> {
   }
 }
 
-export function normalizeUpstreamItem(raw: UpstreamSearchContract): Track {
+export function normalizeUpstreamItem(raw: any): Track {
   const rawTitle = String(raw.title || 'Untitled Track');
   const cleanTitle = rawTitle
     .replace(/\|.*$/g, '')
@@ -403,14 +403,18 @@ export function normalizeUpstreamItem(raw: UpstreamSearchContract): Track {
     raw.thumbnail || `https://i.ytimg.com/vi/${providerId}/hqdefault.jpg`;
   const externalUrl = raw.url || `https://youtu.be/${providerId}`;
 
+  const safeArtistId = `art-${uploader.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'various'}`;
+  const safeAlbumId = `alb-${cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'single'}`;
+  const audioStreamUrl = `/api/v1/audio/stream?id=${providerId}&q=${encodeURIComponent(rawTitle)}`;
+
   return {
     id: `trk-${providerId}`,
     providerId,
     title: rawTitle,
     cleanTitle: cleanTitle || rawTitle,
-    artistId: 'art-sachin-jigar',
+    artistId: safeArtistId,
     artistName: uploader,
-    albumId: 'alb-stree-2',
+    albumId: safeAlbumId,
     albumName: cleanTitle || 'Single Release',
     duration,
     uploader,
@@ -419,6 +423,7 @@ export function normalizeUpstreamItem(raw: UpstreamSearchContract): Track {
     releaseYear: new Date().getFullYear(),
     thumbnailUrl: thumbnail,
     externalUrl,
+    streamUrl: audioStreamUrl,
     sourceType: 'API_CONTRACT_SAMPLE',
     visibleInCatalog: true,
   };

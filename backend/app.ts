@@ -140,87 +140,140 @@ export function createExpressApp() {
       '/api/audio/stream',
     ],
     async (req: Request, res: Response) => {
-    const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
-    const query = typeof req.query.q === 'string' ? req.query.q : undefined;
-    const title = typeof req.query.title === 'string' ? req.query.title : undefined;
-    const artist = typeof req.query.artist === 'string' ? req.query.artist : undefined;
-    const directParam = typeof req.query.streamUrl === 'string' ? req.query.streamUrl : undefined;
+      const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
+      const query = typeof req.query.q === 'string' ? req.query.q : undefined;
+      const title = typeof req.query.title === 'string' ? req.query.title : undefined;
+      const artist = typeof req.query.artist === 'string' ? req.query.artist : undefined;
+      const directParam = typeof req.query.streamUrl === 'string' ? req.query.streamUrl : undefined;
 
-    const knownTrack = serverTracks.find(
-      (t) => (providerId && t.providerId === providerId) || (title && t.cleanTitle === title)
-    );
-    let targetStreamUrl = directParam || knownTrack?.streamUrl || null;
+      const knownTrack = serverTracks.find(
+        (t) => (providerId && t.providerId === providerId) || (title && t.cleanTitle === title)
+      );
+      let targetStreamUrl = directParam || knownTrack?.streamUrl || null;
 
-    if (!targetStreamUrl) {
-      targetStreamUrl = await resolveFastDirectStreamUrl({
+      if (!targetStreamUrl) {
+        targetStreamUrl = await resolveFastDirectStreamUrl({
+          providerId,
+          query,
+          title,
+          artist,
+        });
+        if (targetStreamUrl && knownTrack) {
+          knownTrack.streamUrl = targetStreamUrl;
+        }
+      }
+
+      if (targetStreamUrl) {
+        // Direct CDN 302 redirect: zero server buffering overhead, instant byte-range audio playback
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.redirect(302, targetStreamUrl);
+        return;
+      }
+
+      const audioEntry = await resolveRealAudioBuffer({
         providerId,
         query,
         title,
         artist,
       });
-      if (targetStreamUrl && knownTrack) {
-        knownTrack.streamUrl = targetStreamUrl;
-      }
-    }
 
-    if (targetStreamUrl) {
-      // Direct CDN 302 redirect: zero server buffering overhead, instant byte-range audio playback
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.redirect(302, targetStreamUrl);
-      return;
-    }
-
-    const audioEntry = await resolveRealAudioBuffer({
-      providerId,
-      query,
-      title,
-      artist,
-    });
-
-    if (!audioEntry) {
-      res.status(502).json({
-        error: {
-          code: 'AUDIO_UNAVAILABLE',
-          message: 'Could not load audio stream for this track.',
-        },
-      });
-      return;
-    }
-
-    const totalLength = audioEntry.buffer.length;
-    const range = req.headers.range;
-
-    res.setHeader('Content-Type', audioEntry.contentType);
-    res.setHeader('Accept-Ranges', 'bytes');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    if (range) {
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : totalLength - 1;
-
-      if (start >= totalLength || end >= totalLength) {
-        res.status(416).setHeader('Content-Range', `bytes */${totalLength}`);
-        res.end();
+      if (!audioEntry) {
+        res.status(502).json({
+          error: {
+            code: 'AUDIO_UNAVAILABLE',
+            message: 'Could not load audio stream for this track.',
+          },
+        });
         return;
       }
 
-      const chunk = audioEntry.buffer.subarray(start, end + 1);
-      res.status(206);
-      res.setHeader('Content-Range', `bytes ${start}-${end}/${totalLength}`);
-      res.setHeader('Content-Length', chunk.length);
+      const totalLength = audioEntry.buffer.length;
+      const range = req.headers.range;
 
-      const stream = new Readable({
-        read() {
-          this.push(chunk);
-          this.push(null);
-        },
-      });
-      stream.pipe(res);
-    } else {
-      res.status(200);
-      res.setHeader('Content-Length', totalLength);
+      res.setHeader('Content-Type', audioEntry.contentType);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+
+      if (range) {
+        const parts = range.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : totalLength - 1;
+
+        if (start >= totalLength || end >= totalLength) {
+          res.status(416).setHeader('Content-Range', `bytes */${totalLength}`);
+          res.end();
+          return;
+        }
+
+        const chunk = audioEntry.buffer.subarray(start, end + 1);
+        res.status(206);
+        res.setHeader('Content-Range', `bytes ${start}-${end}/${totalLength}`);
+        res.setHeader('Content-Length', chunk.length);
+
+        const stream = new Readable({
+          read() {
+            this.push(chunk);
+            this.push(null);
+          },
+        });
+        stream.pipe(res);
+      } else {
+        res.status(200);
+        res.setHeader('Content-Length', totalLength);
+        const stream = new Readable({
+          read() {
+            this.push(audioEntry.buffer);
+            this.push(null);
+          },
+        });
+        stream.pipe(res);
+      }
+    });
+
+  // 3. GET /api/v1/audio/download (Direct file attachment stream for zero-buffer download)
+  app.get(
+    ['/api/v1/audio/download', '/v1/audio/download', '/api/download'],
+    async (req: Request, res: Response) => {
+      const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
+      const query = typeof req.query.q === 'string' ? req.query.q : undefined;
+      const title = typeof req.query.title === 'string' ? req.query.title : 'track';
+      const artist = typeof req.query.artist === 'string' ? req.query.artist : 'artist';
+      const directParam = typeof req.query.streamUrl === 'string' ? req.query.streamUrl : undefined;
+
+      const safeFilename = `${title} - ${artist}`.replace(/[/\\?%*:|"<>]/g, '_');
+
+      let streamTarget = directParam;
+      if (!streamTarget) {
+        streamTarget = (await resolveFastDirectStreamUrl({ providerId, query, title, artist })) || undefined;
+      }
+
+      if (streamTarget) {
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${encodeURIComponent(safeFilename)}.mp4"`
+        );
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.redirect(302, streamTarget);
+        return;
+      }
+
+      const audioEntry = await resolveRealAudioBuffer({ providerId, query, title, artist });
+      if (!audioEntry) {
+        res.status(502).json({
+          error: { code: 'DOWNLOAD_FAILED', message: 'Could not prepare download file.' },
+        });
+        return;
+      }
+
+      res.setHeader('Content-Type', audioEntry.contentType);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${encodeURIComponent(safeFilename)}.mp3"`
+      );
+      res.setHeader('Content-Length', audioEntry.buffer.length);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+
       const stream = new Readable({
         read() {
           this.push(audioEntry.buffer);
@@ -228,60 +281,7 @@ export function createExpressApp() {
         },
       });
       stream.pipe(res);
-    }
-  });
-
-  // 3. GET /api/v1/audio/download (Direct file attachment stream for zero-buffer download)
-  app.get(
-    ['/api/v1/audio/download', '/v1/audio/download', '/api/download'],
-    async (req: Request, res: Response) => {
-    const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
-    const query = typeof req.query.q === 'string' ? req.query.q : undefined;
-    const title = typeof req.query.title === 'string' ? req.query.title : 'track';
-    const artist = typeof req.query.artist === 'string' ? req.query.artist : 'artist';
-    const directParam = typeof req.query.streamUrl === 'string' ? req.query.streamUrl : undefined;
-
-    const safeFilename = `${title} - ${artist}`.replace(/[/\\?%*:|"<>]/g, '_');
-
-    let streamTarget = directParam;
-    if (!streamTarget) {
-      streamTarget = (await resolveFastDirectStreamUrl({ providerId, query, title, artist })) || undefined;
-    }
-
-    if (streamTarget) {
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="${encodeURIComponent(safeFilename)}.mp4"`
-      );
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.redirect(302, streamTarget);
-      return;
-    }
-
-    const audioEntry = await resolveRealAudioBuffer({ providerId, query, title, artist });
-    if (!audioEntry) {
-      res.status(502).json({
-        error: { code: 'DOWNLOAD_FAILED', message: 'Could not prepare download file.' },
-      });
-      return;
-    }
-
-    res.setHeader('Content-Type', audioEntry.contentType);
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${encodeURIComponent(safeFilename)}.mp3"`
-    );
-    res.setHeader('Content-Length', audioEntry.buffer.length);
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    const stream = new Readable({
-      read() {
-        this.push(audioEntry.buffer);
-        this.push(null);
-      },
     });
-    stream.pipe(res);
-  });
 
   // 4. GET /api/v1/catalog
   app.get(['/api/v1/catalog', '/v1/catalog'], (_req: Request, res: Response) => {
