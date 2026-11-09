@@ -40,6 +40,7 @@ export interface Track {
   streamUrl?: string;
   sourceType: DataSourceBadge;
   visibleInCatalog: boolean;
+  sourceApi?: string;
 }
 
 export interface Artist {

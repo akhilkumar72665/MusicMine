@@ -656,6 +656,10 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                   {currentTrack.language && (
                     <span className="text-neutral-500"> · {currentTrack.language}</span>
                   )}
+                  <span className="inline-flex items-center gap-1 ml-2 text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FF0000]/15 border border-[#FF0000]/30 text-[#ff7272]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#FF0000] animate-pulse" />
+                    Source: {currentTrack.sourceApi || (currentTrack.providerId?.startsWith('svn-') ? 'JioSaavn' : currentTrack.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
+                  </span>
                 </p>
               </div>
 
@@ -1815,6 +1819,9 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 </button>
                 <span aria-hidden="true">·</span>
                 <span className="text-neutral-500 truncate">{currentTrack.language}</span>
+                <span className="text-[9px] font-mono text-[#ff7272] bg-[#FF0000]/10 px-1.5 py-0.2 rounded border border-[#FF0000]/25 shrink-0 hidden sm:inline-block">
+                  {currentTrack.sourceApi || (currentTrack.providerId?.startsWith('svn-') ? 'JioSaavn' : currentTrack.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
+                </span>
               </div>
             </div>
 

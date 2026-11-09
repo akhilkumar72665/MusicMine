@@ -224,6 +224,7 @@ async function searchFastDirectCatalog(query: string): Promise<Track[]> {
           streamUrl,
           sourceType: 'API_CONTRACT_SAMPLE',
           visibleInCatalog: true,
+          sourceApi: 'JioSaavn',
         };
       })
     );
@@ -331,6 +332,7 @@ export async function fetchLiveTrendingCatalog(): Promise<Track[]> {
           streamUrl,
           sourceType: 'API_CONTRACT_SAMPLE',
           visibleInCatalog: true,
+          sourceApi: 'JioSaavn',
         };
       })
     );
@@ -428,6 +430,7 @@ export function normalizeUpstreamItem(raw: any): Track {
     streamUrl: audioStreamUrl,
     sourceType: 'API_CONTRACT_SAMPLE',
     visibleInCatalog: true,
+    sourceApi: 'Nazriya API',
   };
 }
 
@@ -623,6 +626,7 @@ async function searchItunesCatalog(query: string): Promise<Track[]> {
         streamUrl: item.previewUrl,
         sourceType: 'API_CONTRACT_SAMPLE' as const,
         visibleInCatalog: true,
+        sourceApi: 'iTunes',
       };
     });
   } catch {

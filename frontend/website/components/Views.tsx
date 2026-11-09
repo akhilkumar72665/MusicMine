@@ -406,8 +406,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </h1>
 
               {/* Clean Metadata Line */}
-              <p className="text-sm sm:text-base text-neutral-300">
-                {featuredTrack.artistName.replace(/,\s*/g, ' · ')} · <span className="font-mono text-neutral-400">{formatDuration(featuredTrack.duration)}</span>
+              <p className="text-sm sm:text-base text-neutral-300 flex items-center flex-wrap gap-2">
+                <span>{featuredTrack.artistName.replace(/,\s*/g, ' · ')}</span>
+                <span>·</span>
+                <span className="font-mono text-neutral-400">{formatDuration(featuredTrack.duration)}</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#FF0000]/15 border border-[#FF0000]/30 text-[#ff7272]">
+                  Source: {featuredTrack.sourceApi || (featuredTrack.providerId?.startsWith('svn-') ? 'JioSaavn' : featuredTrack.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
+                </span>
               </p>
 
               {/* Actions */}
@@ -1794,13 +1799,18 @@ export const SearchView: React.FC<SearchViewProps> = ({
                             >
                               {track.cleanTitle}
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => onNavigate(`/artist/${track.artistId}`)}
-                              className="text-neutral-400 hover:text-white truncate block text-left cursor-pointer"
-                            >
-                              {track.artistName}
-                            </button>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => onNavigate(`/artist/${track.artistId}`)}
+                                className="text-neutral-400 hover:text-white truncate block text-left cursor-pointer"
+                              >
+                                {track.artistName}
+                              </button>
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-neutral-900 border border-neutral-700/80 text-neutral-300 shrink-0">
+                                {track.sourceApi || (track.providerId?.startsWith('svn-') ? 'JioSaavn' : track.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -1817,6 +1827,9 @@ export const SearchView: React.FC<SearchViewProps> = ({
                         <span>{track.language}</span>
                         {' · '}
                         <span className="text-neutral-500">{track.genre}</span>
+                        <span className="ml-1.5 text-[9px] font-mono px-1.5 py-0.5 rounded bg-[#FF0000]/10 border border-[#FF0000]/25 text-[#ff7272]">
+                          {track.sourceApi || (track.providerId?.startsWith('svn-') ? 'JioSaavn' : track.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
+                        </span>
                       </td>
                       <td className="py-3 px-3 text-right font-mono tabular-nums text-neutral-300">
                         {formatDuration(track.duration)}

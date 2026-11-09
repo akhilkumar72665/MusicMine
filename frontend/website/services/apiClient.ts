@@ -19,7 +19,10 @@ let activeSearchController: AbortController | null = null;
 function parseRawListToTracks(rawList: any[]): Track[] {
   return rawList.map((item: any) => {
     if (item.cleanTitle && item.artistName && item.id) {
-      return item as Track;
+      return {
+        ...item,
+        sourceApi: item.sourceApi || (item.providerId?.startsWith('svn-') ? 'JioSaavn' : item.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API'),
+      } as Track;
     }
     const rawTitle = String(item.title || 'Untitled Track');
     const cleanTitle = rawTitle
@@ -57,6 +60,7 @@ function parseRawListToTracks(rawList: any[]): Track[] {
       streamUrl,
       sourceType: 'API_CONTRACT_SAMPLE',
       visibleInCatalog: true,
+      sourceApi: item.sourceApi || (providerId.startsWith('svn-') ? 'JioSaavn' : providerId.startsWith('itu-') ? 'iTunes' : 'Nazriya API'),
     };
   });
 }
