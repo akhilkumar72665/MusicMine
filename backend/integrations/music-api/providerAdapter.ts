@@ -5,8 +5,10 @@ import { INITIAL_TRACKS } from '../../../frontend/website/data/catalogFixtures';
 const UPSTREAM_BASE_URL =
   process.env.MUSIC_API_BASE_URL || 'https://nazriya.musicmine.in';
 
+const DEFAULT_NAZRIYA_API_KEY = 'nz_bcfe4849cb48f9180f389852';
+
 let cachedApiKey: string =
-  process.env.MUSIC_API_KEY || '';
+  process.env.MUSIC_API_KEY || DEFAULT_NAZRIYA_API_KEY;
 
 export interface NormalizedSearchResult {
   requestId: string;
@@ -429,10 +431,10 @@ export function normalizeUpstreamItem(raw: any): Track {
   };
 }
 
-export async function fetchNazriyaSearch(query: string, timeoutMs = 2500): Promise<Track[]> {
+export async function fetchNazriyaSearch(query: string, timeoutMs = 8000): Promise<Track[]> {
   try {
     if (!cachedApiKey) {
-      await provisionFreshNazriyaKey();
+      cachedApiKey = process.env.MUSIC_API_KEY || DEFAULT_NAZRIYA_API_KEY;
     }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -482,7 +484,7 @@ export async function fetchNazriyaSearch(query: string, timeoutMs = 2500): Promi
 export async function fetchNazriyaTrending(n = 20): Promise<Track[]> {
   try {
     if (!cachedApiKey) {
-      await provisionFreshNazriyaKey();
+      cachedApiKey = process.env.MUSIC_API_KEY || DEFAULT_NAZRIYA_API_KEY;
     }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -521,7 +523,7 @@ export async function fetchNazriyaTrending(n = 20): Promise<Track[]> {
 export async function fetchNazriyaSuggestions(q: string, hl = 'en'): Promise<string[]> {
   try {
     if (!cachedApiKey) {
-      await provisionFreshNazriyaKey();
+      cachedApiKey = process.env.MUSIC_API_KEY || DEFAULT_NAZRIYA_API_KEY;
     }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 2000);
@@ -554,7 +556,7 @@ export async function fetchNazriyaSuggestions(q: string, hl = 'en'): Promise<str
 export async function fetchNazriyaArtist(name: string): Promise<any> {
   try {
     if (!cachedApiKey) {
-      await provisionFreshNazriyaKey();
+      cachedApiKey = process.env.MUSIC_API_KEY || DEFAULT_NAZRIYA_API_KEY;
     }
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3500);
@@ -678,7 +680,7 @@ export async function searchMusicCatalog(
 
   // Parallel fetch: Nazriya custom API + JioSaavn direct + global iTunes fallback
   const [nazriyaTracks, fastDirectTracks, itunesTracks] = await Promise.all([
-    fetchNazriyaSearch(sanitized, 2500),
+    fetchNazriyaSearch(sanitized, 8000),
     searchFastDirectCatalog(sanitized),
     searchItunesCatalog(sanitized),
   ]);
