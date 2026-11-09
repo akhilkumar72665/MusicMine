@@ -15,8 +15,9 @@ let activeSearchController: AbortController | null = null;
 
 export async function fetchSearchTracks(query: string): Promise<Track[] | null> {
   const normalized = query.trim().toLowerCase();
-  if (normalized && clientSearchCache.has(normalized)) {
-    return clientSearchCache.get(normalized) || null;
+  const cacheKey = normalized || '__trending__';
+  if (clientSearchCache.has(cacheKey)) {
+    return clientSearchCache.get(cacheKey) || null;
   }
 
   if (activeSearchController && normalized) {
@@ -28,14 +29,20 @@ export async function fetchSearchTracks(query: string): Promise<Track[] | null> 
   }
 
   try {
-    const res = await fetch(`/api/v1/search?q=${encodeURIComponent(query)}`, {
+    let res = await fetch(`/api/v1/search?q=${encodeURIComponent(query)}`, {
       signal: controller.signal,
     });
+    // Fallback if URL prefix was rewritten without /api
+    if (!res.ok && res.status === 404) {
+      res = await fetch(`/v1/search?q=${encodeURIComponent(query)}`, {
+        signal: controller.signal,
+      });
+    }
     if (!res.ok) return null;
     const json = (await res.json()) as SearchApiResponse;
     const tracks = Array.isArray(json.data) ? json.data : null;
-    if (tracks && normalized) {
-      clientSearchCache.set(normalized, tracks);
+    if (tracks && tracks.length > 0) {
+      clientSearchCache.set(cacheKey, tracks);
     }
     return tracks;
   } catch {

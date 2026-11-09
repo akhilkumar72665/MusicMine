@@ -53,22 +53,32 @@ export function createExpressApp() {
 
   app.use(express.json({ limit: '256kb' }));
 
-  app.use((_req, res, next) => {
+  app.use((req, res, next) => {
+    // If Vercel rewrote path to /api or /api/index, restore original URL
+    const original = (req.headers['x-matched-path'] || req.headers['x-vercel-original-url']) as string | undefined;
+    if (original && original.startsWith('/api') && (req.url === '/api' || req.url.startsWith('/api?'))) {
+      const queryPart = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      req.url = original.includes('?') ? original : `${original}${queryPart}`;
+    }
+
     const reqId = crypto.randomUUID();
     res.setHeader('X-Request-Id', reqId);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
-    if (_req.method === 'OPTIONS') {
+    if (req.method === 'OPTIONS') {
       res.sendStatus(204);
       return;
     }
     next();
   });
 
-  // 1. GET /api/v1/search?q=...
-  app.get('/api/v1/search', async (req: Request, res: Response) => {
-    const clientIp = req.ip || 'local';
+  // 1. GET /api/v1/search?q=... (also support /v1/search)
+  app.get(['/api/v1/search', '/v1/search'], async (req: Request, res: Response) => {
+    const clientIp =
+      (req.headers['x-forwarded-for'] as string) ||
+      req.socket?.remoteAddress ||
+      'local';
     if (!checkRateLimit(clientIp)) {
       res.status(429).json({
         error: {
@@ -101,7 +111,7 @@ export function createExpressApp() {
   });
 
   // 2. GET /api/v1/audio/stream (Same-origin zero-latency chunked proxy for Web Audio EQ & Analyser)
-  app.get('/api/v1/audio/stream', async (req: Request, res: Response) => {
+  app.get(['/api/v1/audio/stream', '/v1/audio/stream'], async (req: Request, res: Response) => {
     const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
     const query = typeof req.query.q === 'string' ? req.query.q : undefined;
     const title = typeof req.query.title === 'string' ? req.query.title : undefined;
@@ -194,7 +204,7 @@ export function createExpressApp() {
   });
 
   // 3. GET /api/v1/audio/download (Direct file attachment stream for zero-buffer download)
-  app.get('/api/v1/audio/download', async (req: Request, res: Response) => {
+  app.get(['/api/v1/audio/download', '/v1/audio/download'], async (req: Request, res: Response) => {
     const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
     const query = typeof req.query.q === 'string' ? req.query.q : undefined;
     const title = typeof req.query.title === 'string' ? req.query.title : 'track';
@@ -244,7 +254,7 @@ export function createExpressApp() {
   });
 
   // 4. GET /api/v1/catalog
-  app.get('/api/v1/catalog', (_req: Request, res: Response) => {
+  app.get(['/api/v1/catalog', '/v1/catalog'], (_req: Request, res: Response) => {
     res.json({
       data: serverTracks,
       meta: { count: serverTracks.length },
@@ -252,7 +262,7 @@ export function createExpressApp() {
   });
 
   // 5. GET /api/v1/track/:trackId
-  app.get('/api/v1/track/:trackId', (req: Request, res: Response) => {
+  app.get(['/api/v1/track/:trackId', '/v1/track/:trackId'], (req: Request, res: Response) => {
     const { trackId } = req.params;
     const track = serverTracks.find((t) => t.id === trackId || t.providerId === trackId);
     if (!track) {
@@ -265,7 +275,7 @@ export function createExpressApp() {
   });
 
   // 6. GET /api/v1/artist/:artistId/tracks
-  app.get('/api/v1/artist/:artistId/tracks', (req: Request, res: Response) => {
+  app.get(['/api/v1/artist/:artistId/tracks', '/v1/artist/:artistId/tracks'], (req: Request, res: Response) => {
     const { artistId } = req.params;
     const cleanId = artistId.toLowerCase();
     const artistName = cleanId.replace(/^art-/, '').replace(/-/g, ' ');
@@ -285,7 +295,7 @@ export function createExpressApp() {
   });
 
   // 7. GET /api/v1/album/:albumId/tracks
-  app.get('/api/v1/album/:albumId/tracks', (req: Request, res: Response) => {
+  app.get(['/api/v1/album/:albumId/tracks', '/v1/album/:albumId/tracks'], (req: Request, res: Response) => {
     const { albumId } = req.params;
     const cleanId = albumId.toLowerCase();
     const albumName = cleanId.replace(/^alb-/, '').replace(/-/g, ' ');
@@ -301,7 +311,7 @@ export function createExpressApp() {
   });
 
   // 8. GET /api/v1/movie/:movieId/tracks
-  app.get('/api/v1/movie/:movieId/tracks', (req: Request, res: Response) => {
+  app.get(['/api/v1/movie/:movieId/tracks', '/v1/movie/:movieId/tracks'], (req: Request, res: Response) => {
     const { movieId } = req.params;
     const cleanMovieName = movieId
       .toLowerCase()
@@ -327,7 +337,7 @@ export function createExpressApp() {
   });
 
   // 9. GET /api/v1/lyrics
-  app.get('/api/v1/lyrics', async (req: Request, res: Response) => {
+  app.get(['/api/v1/lyrics', '/v1/lyrics'], async (req: Request, res: Response) => {
     const title = typeof req.query.title === 'string' ? req.query.title : '';
     const artist = typeof req.query.artist === 'string' ? req.query.artist : '';
 
@@ -433,31 +443,41 @@ export function createExpressApp() {
   });
 
   // 10. User & Playlist CRUD routes
-  app.get('/api/v1/me/liked', (_req: Request, res: Response) => {
+  app.get(['/api/v1/me/liked', '/v1/me/liked'], (_req: Request, res: Response) => {
     res.json({ data: serverLikedIds });
   });
 
-  app.post('/api/v1/me/liked', (req: Request, res: Response) => {
+  app.post(['/api/v1/me/liked', '/v1/me/liked', '/api/v1/me/liked-tracks', '/v1/me/liked-tracks'], (req: Request, res: Response) => {
     const { trackId, liked } = req.body || {};
-    if (!trackId || typeof liked !== 'boolean') {
-      res.status(400).json({ error: { message: 'trackId and liked boolean required.' } });
+    const actualTrackId = trackId;
+    const isLiked = typeof liked === 'boolean' ? liked : true;
+    if (!actualTrackId) {
+      res.status(400).json({ error: { message: 'trackId is required.' } });
       return;
     }
-    if (liked) {
-      if (!serverLikedIds.includes(trackId)) {
-        serverLikedIds.unshift(trackId);
+    if (isLiked) {
+      if (!serverLikedIds.includes(actualTrackId)) {
+        serverLikedIds.unshift(actualTrackId);
       }
     } else {
-      serverLikedIds = serverLikedIds.filter((id) => id !== trackId);
+      serverLikedIds = serverLikedIds.filter((id) => id !== actualTrackId);
     }
-    res.json({ data: { trackId, liked, total: serverLikedIds.length } });
+    res.json({ data: { trackId: actualTrackId, liked: isLiked, total: serverLikedIds.length } });
   });
 
-  app.get('/api/v1/me/playlists', (_req: Request, res: Response) => {
+  app.delete(['/api/v1/me/liked/:trackId', '/v1/me/liked/:trackId', '/api/v1/me/liked-tracks/:trackId', '/v1/me/liked-tracks/:trackId'], (req: Request, res: Response) => {
+    const { trackId } = req.params;
+    if (trackId) {
+      serverLikedIds = serverLikedIds.filter((id) => id !== trackId);
+    }
+    res.json({ data: { trackId, liked: false, total: serverLikedIds.length } });
+  });
+
+  app.get(['/api/v1/me/playlists', '/v1/me/playlists'], (_req: Request, res: Response) => {
     res.json({ data: serverPlaylists });
   });
 
-  app.post('/api/v1/me/playlists', (req: Request, res: Response) => {
+  app.post(['/api/v1/me/playlists', '/v1/me/playlists'], (req: Request, res: Response) => {
     const { name, description, isPublic, ownerName } = req.body || {};
     if (!name || typeof name !== 'string') {
       res.status(400).json({ error: { message: 'Playlist name is required.' } });
@@ -479,7 +499,7 @@ export function createExpressApp() {
     res.status(201).json({ data: newPlaylist });
   });
 
-  app.put('/api/v1/me/playlists/:playlistId', (req: Request, res: Response) => {
+  const handleUpdatePlaylist = (req: Request, res: Response) => {
     const { playlistId } = req.params;
     const updates = req.body || {};
     let updatedItem: Playlist | null = null;
@@ -504,9 +524,12 @@ export function createExpressApp() {
       return;
     }
     res.json({ data: updatedItem });
-  });
+  };
 
-  app.delete('/api/v1/me/playlists/:playlistId', (req: Request, res: Response) => {
+  app.put(['/api/v1/me/playlists/:playlistId', '/v1/me/playlists/:playlistId'], handleUpdatePlaylist);
+  app.patch(['/api/v1/me/playlists/:playlistId', '/v1/me/playlists/:playlistId'], handleUpdatePlaylist);
+
+  app.delete(['/api/v1/me/playlists/:playlistId', '/v1/me/playlists/:playlistId'], (req: Request, res: Response) => {
     serverPlaylists = serverPlaylists.filter((pl) => pl.id !== req.params.playlistId);
     res.json({ data: { deleted: true } });
   });
@@ -538,7 +561,11 @@ export async function startServer() {
   });
 }
 
-// Only auto-start when running directly (node/tsx server.ts)
-if (process.env.VERCEL !== '1') {
+// Only auto-start when running directly (node/tsx server.ts), not when imported by Vercel serverless
+const isDirectExecution =
+  process.argv[1] &&
+  (process.argv[1].endsWith('server.ts') || process.argv[1].endsWith('server.js'));
+
+if (isDirectExecution && process.env.VERCEL !== '1') {
   startServer();
 }

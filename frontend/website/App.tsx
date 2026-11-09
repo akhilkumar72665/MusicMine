@@ -236,6 +236,42 @@ export function MusicMineWebsiteApp() {
     }
   }, []);
 
+  // Fetch live India Superhits Top 50 chart on startup to ensure 2025/2026 songs are loaded
+  useEffect(() => {
+    let cancelled = false;
+    fetchSearchTracks('')
+      .then((liveTracks) => {
+        if (cancelled || !liveTracks || liveTracks.length === 0) return;
+        setTracks((prev) => {
+          const merged = [...prev];
+          for (const item of liveTracks) {
+            if (!merged.some((t) => t.id === item.id || t.providerId === item.providerId)) {
+              merged.push(item);
+            }
+          }
+          return merged;
+        });
+        setHomepageSections((prev) =>
+          prev.map((sec) => {
+            if (sec.id === 'sec-trending-india') {
+              const newIds = [
+                ...liveTracks.map((t) => t.id),
+                ...sec.itemIds,
+              ];
+              const uniqueIds = Array.from(new Set(newIds));
+              return { ...sec, itemIds: uniqueIds };
+            }
+            return sec;
+          })
+        );
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     const trimmed = headerSearchQuery.trim();
     if (!trimmed) {

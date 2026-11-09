@@ -94,12 +94,19 @@ async function resolveSaavnEncryptedUrl(encryptedMediaUrl: string): Promise<stri
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1800);
+    const timeout = setTimeout(() => controller.abort(), 3500);
     const tokenUrl = `https://www.jiosaavn.com/api.php?__call=song.generateAuthToken&url=${encodeURIComponent(
       encryptedMediaUrl
     )}&bitrate=160&api_version=4&_format=json&ctx=web6dot0&_marker=0`;
 
-    const res = await fetch(tokenUrl, { signal: controller.signal });
+    const res = await fetch(tokenUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'application/json, text/plain, */*',
+      },
+    });
     clearTimeout(timeout);
     if (!res.ok) return undefined;
 
@@ -144,12 +151,20 @@ interface SaavnSongItem {
 async function searchFastDirectCatalog(query: string): Promise<Track[]> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2800);
+    const timeout = setTimeout(() => controller.abort(), 4500);
     const url = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&api_version=4&ctx=web6dot0&n=30&q=${encodeURIComponent(
       query
     )}`;
 
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
+      },
+    });
     clearTimeout(timeout);
     if (!res.ok) return [];
 
@@ -172,7 +187,7 @@ async function searchFastDirectCatalog(query: string): Promise<Track[]> {
         const artistName = decodeHtmlEntities(primaryArtists);
         const albumName = decodeHtmlEntities(item.more_info?.album || cleanTitle);
         const duration = parseDurationSeconds(item.more_info?.duration);
-        const year = parseInt(item.year || '2024', 10) || 2024;
+        const year = parseInt(item.year || '2025', 10) || 2025;
         const thumbnailUrl = item.image
           ? item.image.replace('150x150', '500x500').replace('50x50', '500x500')
           : undefined;
@@ -214,6 +229,107 @@ async function searchFastDirectCatalog(query: string): Promise<Track[]> {
     return tracks.filter((t): t is Track => t !== null);
   } catch {
     return [];
+  }
+}
+
+let cachedTrendingTracks: Track[] = [];
+let cachedTrendingAt = 0;
+
+/**
+ * Fetches India Superhits Top 50 live chart to guarantee brand new 2025/2026 songs
+ * on startup, discovery, and blank search queries.
+ */
+export async function fetchLiveTrendingCatalog(): Promise<Track[]> {
+  const now = Date.now();
+  if (cachedTrendingTracks.length > 0 && now - cachedTrendingAt < 15 * 60 * 1000) {
+    return cachedTrendingTracks;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4500);
+
+    const url =
+      'https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=1134543272&api_version=4&_format=json&_marker=0&ctx=web6dot0';
+
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        Accept: 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
+      },
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return cachedTrendingTracks;
+
+    const data = (await res.json()) as { list?: SaavnSongItem[] };
+    const rawList = Array.isArray(data.list) ? data.list : [];
+    if (rawList.length === 0) return cachedTrendingTracks;
+
+    const tracks = await Promise.all(
+      rawList.slice(0, 50).map(async (item): Promise<Track | null> => {
+        if (!item.id || !item.title) return null;
+        const cleanTitle = decodeHtmlEntities(item.title);
+        const primaryArtists =
+          item.more_info?.artistMap?.primary_artists
+            ?.map((a) => a.name)
+            .filter(Boolean)
+            .join(', ') ||
+          item.more_info?.music ||
+          item.subtitle ||
+          'Featured Artist';
+        const artistName = decodeHtmlEntities(primaryArtists);
+        const albumName = decodeHtmlEntities(item.more_info?.album || cleanTitle);
+        const duration = parseDurationSeconds(item.more_info?.duration);
+        const year = parseInt(item.year || '2025', 10) || 2025;
+        const thumbnailUrl = item.image
+          ? item.image.replace('150x150', '500x500').replace('50x50', '500x500')
+          : undefined;
+
+        const streamUrl = item.more_info?.encrypted_media_url
+          ? await resolveSaavnEncryptedUrl(item.more_info.encrypted_media_url)
+          : undefined;
+
+        if (streamUrl) {
+          directStreamUrlCache.set(`svn-${item.id}`, streamUrl);
+        }
+
+        const safeArtistId = `art-${artistName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'various'}`;
+        const safeAlbumId = `alb-${albumName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'single'}`;
+
+        return {
+          id: `trk-svn-${item.id}`,
+          providerId: `svn-${item.id}`,
+          title: `${cleanTitle} - ${artistName}`,
+          cleanTitle,
+          artistId: safeArtistId,
+          artistName,
+          albumId: safeAlbumId,
+          albumName,
+          duration,
+          uploader: decodeHtmlEntities(item.more_info?.label || artistName),
+          language: inferLanguage(cleanTitle, artistName, item.language),
+          genre: 'Bollywood',
+          releaseYear: year,
+          thumbnailUrl,
+          externalUrl: item.perma_url,
+          streamUrl,
+          sourceType: 'API_CONTRACT_SAMPLE',
+          visibleInCatalog: true,
+        };
+      })
+    );
+
+    const valid = tracks.filter((t): t is Track => t !== null);
+    if (valid.length > 0) {
+      cachedTrendingTracks = valid;
+      cachedTrendingAt = now;
+    }
+    return cachedTrendingTracks;
+  } catch {
+    return cachedTrendingTracks;
   }
 }
 
@@ -366,10 +482,17 @@ export async function searchMusicCatalog(
   });
 
   if (!sanitized) {
+    const liveTrending = await fetchLiveTrendingCatalog();
+    const combined = [...liveTrending];
+    for (const local of localMatches) {
+      if (!combined.some((t) => t.id === local.id || t.providerId === local.providerId)) {
+        combined.push(local);
+      }
+    }
     return {
       requestId,
       query: sanitized,
-      tracks: localMatches,
+      tracks: combined,
       upstreamReachable: true,
     };
   }
