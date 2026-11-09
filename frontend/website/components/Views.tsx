@@ -502,11 +502,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       type="button"
                       onClick={() => setHeroSlideIndex(i)}
                       aria-label={`Featured track ${i + 1}: ${s.cleanTitle}`}
-                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                        i === safeHeroIndex
+                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === safeHeroIndex
                           ? 'w-7 bg-[#FF0000]'
                           : 'w-2 bg-neutral-700 hover:bg-neutral-500'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -773,11 +772,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   return (
                     <div
                       key={track.id}
-                      className={`group relative rounded-xl p-3 border transition-colors flex items-center gap-3.5 ${
-                        isCurrent
+                      className={`group relative rounded-xl p-3 border transition-colors flex items-center gap-3.5 ${isCurrent
                           ? 'bg-neutral-900 border-[#FF0000]'
                           : 'bg-[#0E0E0E] hover:bg-[#161616] border-neutral-850 hover:border-neutral-700'
-                      }`}
+                        }`}
                     >
                       <button
                         type="button"
@@ -832,9 +830,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                           type="button"
                           onClick={() => onToggleLike(track.id)}
                           aria-label={isLiked ? 'Unlike track' : 'Like track'}
-                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                            isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
-                          }`}
+                          className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isLiked ? 'text-[#FF0000]' : 'text-neutral-500 hover:text-white'
+                            }`}
                         >
                           <Heart className={`w-4 h-4 ${isLiked ? 'fill-[#FF0000]' : ''}`} />
                         </button>
@@ -1305,22 +1302,38 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
   const matchedTracks = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const basePool = q && remoteResults && remoteResults.length > 0 ? remoteResults : visibleTracks;
+    const seen = new Set<string>();
+    const list: Track[] = [];
 
-    return basePool.filter((t) => {
-      const categoryOk = isTrackInCategory(t, selectedGenre);
-      if (!categoryOk) return false;
-      if (!q) return true;
-      if (remoteResults && remoteResults.length > 0) return true;
-      return (
-        t.title.toLowerCase().includes(q) ||
-        t.cleanTitle.toLowerCase().includes(q) ||
-        t.artistName.toLowerCase().includes(q) ||
-        t.albumName.toLowerCase().includes(q) ||
-        t.language.toLowerCase().includes(q) ||
-        t.genre.toLowerCase().includes(q)
-      );
-    });
+    // Prioritize fresh remote search results
+    if (remoteResults && remoteResults.length > 0) {
+      for (const t of remoteResults) {
+        if (!seen.has(t.id)) {
+          seen.add(t.id);
+          list.push(t);
+        }
+      }
+    }
+
+    // Merge in local catalog matches
+    for (const t of visibleTracks) {
+      if (!seen.has(t.id)) {
+        if (
+          !q ||
+          t.title.toLowerCase().includes(q) ||
+          t.cleanTitle.toLowerCase().includes(q) ||
+          t.artistName.toLowerCase().includes(q) ||
+          t.albumName.toLowerCase().includes(q) ||
+          t.language.toLowerCase().includes(q) ||
+          t.genre.toLowerCase().includes(q)
+        ) {
+          seen.add(t.id);
+          list.push(t);
+        }
+      }
+    }
+
+    return list.filter((t) => isTrackInCategory(t, selectedGenre));
   }, [visibleTracks, remoteResults, query, selectedGenre]);
 
   const matchedArtists = useMemo(() => {
@@ -1497,11 +1510,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   key={`srch-chip-${chip.id}`}
                   type="button"
                   onClick={() => setTrendFilter(chip.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                    trendFilter === chip.id
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${trendFilter === chip.id
                       ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
                       : 'bg-[#121212] text-neutral-400 hover:text-white border border-neutral-800'
-                  }`}
+                    }`}
                 >
                   {chip.label}
                 </button>

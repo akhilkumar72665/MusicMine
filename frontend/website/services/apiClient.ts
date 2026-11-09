@@ -29,23 +29,35 @@ export async function fetchSearchTracks(query: string): Promise<Track[] | null> 
   }
 
   try {
-    let res = await fetch(`/api/v1/search?q=${encodeURIComponent(query)}`, {
-      signal: controller.signal,
-    });
-    // Fallback if URL prefix was rewritten without /api
-    if (!res.ok && res.status === 404) {
-      res = await fetch(`/v1/search?q=${encodeURIComponent(query)}`, {
-        signal: controller.signal,
-      });
+    const endpoints = [
+      `/api/v1/search?q=${encodeURIComponent(query)}`,
+      `/api/search?q=${encodeURIComponent(query)}`,
+      `/api?q=${encodeURIComponent(query)}`,
+    ];
+
+    let res: Response | null = null;
+    for (const ep of endpoints) {
+      try {
+        const candidate = await fetch(ep, { signal: controller.signal });
+        const cType = candidate.headers.get('content-type') || '';
+        if (candidate.ok && cType.includes('application/json')) {
+          res = candidate;
+          break;
+        }
+      } catch (e: any) {
+        if (e?.name === 'AbortError') throw e;
+      }
     }
-    if (!res.ok) return null;
+
+    if (!res || !res.ok) return null;
     const json = (await res.json()) as SearchApiResponse;
     const tracks = Array.isArray(json.data) ? json.data : null;
     if (tracks && tracks.length > 0) {
       clientSearchCache.set(cacheKey, tracks);
     }
     return tracks;
-  } catch {
+  } catch (err: any) {
+    if (err?.name === 'AbortError') return null;
     return null;
   }
 }

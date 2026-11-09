@@ -460,6 +460,55 @@ async function fetchNazriyaSearch(query: string, timeoutMs = 1500): Promise<Trac
   }
 }
 
+async function searchItunesCatalog(query: string): Promise<Track[]> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const url = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=25`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) return [];
+    const data = (await res.json()) as { results?: any[] };
+    const results = Array.isArray(data.results) ? data.results : [];
+    return results.map((item) => {
+      const cleanTitle = decodeHtmlEntities(item.trackName || 'Unknown Title');
+      const artistName = decodeHtmlEntities(item.artistName || 'Unknown Artist');
+      const albumName = decodeHtmlEntities(item.collectionName || cleanTitle);
+      const duration = Math.round((item.trackTimeMillis || 210000) / 1000);
+      const year = item.releaseDate ? new Date(item.releaseDate).getFullYear() : 2024;
+      const artwork = item.artworkUrl100
+        ? item.artworkUrl100.replace('100x100bb', '600x600bb')
+        : undefined;
+
+      const safeArtistId = `art-${artistName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'various'}`;
+      const safeAlbumId = `alb-${albumName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 32) || 'single'}`;
+
+      return {
+        id: `trk-itu-${item.trackId}`,
+        providerId: `itu-${item.trackId}`,
+        title: `${cleanTitle} - ${artistName}`,
+        cleanTitle,
+        artistId: safeArtistId,
+        artistName,
+        albumId: safeAlbumId,
+        albumName,
+        duration,
+        uploader: item.artistName || 'Apple Music',
+        language: inferLanguage(cleanTitle, artistName, item.primaryGenreName),
+        genre: item.primaryGenreName || 'Pop',
+        releaseYear: year,
+        thumbnailUrl: artwork,
+        externalUrl: item.trackViewUrl,
+        streamUrl: item.previewUrl,
+        sourceType: 'API_CONTRACT_SAMPLE' as const,
+        visibleInCatalog: true,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function searchMusicCatalog(
   query: string,
   catalogTracks: Track[] = INITIAL_TRACKS
@@ -508,12 +557,11 @@ export async function searchMusicCatalog(
     };
   }
 
-  // Fast path: Fetch direct high-speed catalog (~180ms) first
-  const fastDirectTracks = await searchFastDirectCatalog(sanitized);
-  const nazriyaTracks =
-    fastDirectTracks.length >= 4
-      ? []
-      : await fetchNazriyaSearch(sanitized, 1500);
+  // Parallel fetch: High-speed JioSaavn search + global iTunes fallback
+  const [fastDirectTracks, itunesTracks] = await Promise.all([
+    searchFastDirectCatalog(sanitized),
+    searchItunesCatalog(sanitized),
+  ]);
 
   const mergedMap = new Map<string, Track>();
   // Prioritize tracks that already have instant direct CDN streamUrls
@@ -525,7 +573,7 @@ export async function searchMusicCatalog(
       mergedMap.set(item.providerId, item);
     }
   }
-  for (const item of nazriyaTracks) {
+  for (const item of itunesTracks) {
     if (!mergedMap.has(item.providerId)) {
       mergedMap.set(item.providerId, item);
     }
@@ -540,7 +588,7 @@ export async function searchMusicCatalog(
     requestId,
     query: sanitized,
     tracks: finalTracks,
-    upstreamReachable: fastDirectTracks.length > 0 || nazriyaTracks.length > 0,
+    upstreamReachable: fastDirectTracks.length > 0 || itunesTracks.length > 0,
   };
 }
 

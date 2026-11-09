@@ -48,12 +48,32 @@ export function createExpressApp() {
   app.use(express.json({ limit: '256kb' }));
 
   app.use((req, res, next) => {
-    // If Vercel rewrote path to /api or /api/index, restore original URL
-    const original = (req.headers['x-matched-path'] || req.headers['x-vercel-original-url']) as string | undefined;
-    if (original && original.startsWith('/api') && (req.url === '/api' || req.url.startsWith('/api?'))) {
-      const queryPart = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-      req.url = original.includes('?') ? original : `${original}${queryPart}`;
-    }
+    try {
+      const rawUrl: string = req.url || '/';
+
+      // 1. If Vercel rewrote with __path parameter
+      if (rawUrl.includes('__path=')) {
+        const parsed = new URL(rawUrl, 'http://localhost');
+        const pathParam = parsed.searchParams.get('__path');
+        if (pathParam) {
+          parsed.searchParams.delete('__path');
+          const search = parsed.searchParams.toString();
+          const cleanPath = pathParam.replace(/^\/+/, '');
+          req.url = `/api/${cleanPath}${search ? '?' + search : ''}`;
+        }
+      } else {
+        const original = (req.headers['x-matched-path'] || req.headers['x-vercel-original-url']) as string | undefined;
+        if (original && original.startsWith('/api') && (req.url === '/api' || req.url.startsWith('/api?'))) {
+          const queryPart = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+          req.url = original.includes('?') ? original : `${original}${queryPart}`;
+        } else if (rawUrl === '/api' || rawUrl.startsWith('/api?')) {
+          const parsed = new URL(rawUrl, 'http://localhost');
+          if (parsed.searchParams.has('q')) {
+            req.url = `/api/v1/search${parsed.search}`;
+          }
+        }
+      }
+    } catch {}
 
     const reqId = crypto.randomUUID();
     res.setHeader('X-Request-Id', reqId);
@@ -67,8 +87,10 @@ export function createExpressApp() {
     next();
   });
 
-  // 1. GET /api/v1/search?q=... (also support /v1/search)
-  app.get(['/api/v1/search', '/v1/search'], async (req: Request, res: Response) => {
+  // 1. GET /api/v1/search?q=... (also support /v1/search, /api/search, /search, and /api?q=...)
+  app.get(
+    ['/api/v1/search', '/v1/search', '/api/search', '/search', '/api'],
+    async (req: Request, res: Response) => {
     const clientIp =
       (req.headers['x-forwarded-for'] as string) ||
       req.socket?.remoteAddress ||

@@ -265,7 +265,7 @@ export function MusicMineWebsiteApp() {
           })
         );
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => {
       cancelled = true;
@@ -280,26 +280,55 @@ export function MusicMineWebsiteApp() {
       return;
     }
 
-    let cancelled = false;
+    // Instant local catalog matches on the very first keystroke (0ms feedback)
+    const qLower = trimmed.toLowerCase();
+    const localMatches = tracks.filter((t) => {
+      if (!t.visibleInCatalog) return false;
+      return (
+        t.cleanTitle.toLowerCase().includes(qLower) ||
+        t.artistName.toLowerCase().includes(qLower) ||
+        t.albumName.toLowerCase().includes(qLower) ||
+        t.genre.toLowerCase().includes(qLower) ||
+        t.language.toLowerCase().includes(qLower)
+      );
+    });
+
+    setHeaderSearchResults(localMatches);
     setIsSearchingHeader(true);
+
+    let cancelled = false;
     const timer = window.setTimeout(async () => {
       try {
         const results = await fetchSearchTracks(trimmed);
-        if (!cancelled) {
-          setHeaderSearchResults(results || []);
+        if (!cancelled && results && results.length > 0) {
+          const seen = new Set<string>();
+          const merged: Track[] = [];
+          for (const item of results) {
+            if (!seen.has(item.id)) {
+              seen.add(item.id);
+              merged.push(item);
+            }
+          }
+          for (const item of localMatches) {
+            if (!seen.has(item.id)) {
+              seen.add(item.id);
+              merged.push(item);
+            }
+          }
+          setHeaderSearchResults(merged);
         }
       } catch {
-        if (!cancelled) setHeaderSearchResults([]);
+        // Keep local matches if remote search fails
       } finally {
         if (!cancelled) setIsSearchingHeader(false);
       }
-    }, 160);
+    }, 180);
 
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [headerSearchQuery]);
+  }, [headerSearchQuery, tracks]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

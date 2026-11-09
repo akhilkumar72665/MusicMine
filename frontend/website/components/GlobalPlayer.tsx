@@ -222,24 +222,20 @@ export const LiveBeatsVisualizer: React.FC<{
         className="flex items-end gap-0.5 h-3.5 px-1.5 shrink-0"
       >
         <span
-          className={`w-0.5 rounded-full bg-[#FF0000] ${
-            isPlaying ? 'h-full mm-beat-1' : 'h-1.5 opacity-30'
-          }`}
+          className={`w-0.5 rounded-full bg-[#FF0000] ${isPlaying ? 'h-full mm-beat-1' : 'h-1.5 opacity-30'
+            }`}
         />
         <span
-          className={`w-0.5 rounded-full bg-[#FF0000] ${
-            isPlaying ? 'h-full mm-beat-2' : 'h-2 opacity-30'
-          }`}
+          className={`w-0.5 rounded-full bg-[#FF0000] ${isPlaying ? 'h-full mm-beat-2' : 'h-2 opacity-30'
+            }`}
         />
         <span
-          className={`w-0.5 rounded-full bg-[#FF0000] ${
-            isPlaying ? 'h-full mm-beat-3' : 'h-1 opacity-30'
-          }`}
+          className={`w-0.5 rounded-full bg-[#FF0000] ${isPlaying ? 'h-full mm-beat-3' : 'h-1 opacity-30'
+            }`}
         />
         <span
-          className={`w-0.5 rounded-full bg-[#FF0000] ${
-            isPlaying ? 'h-full mm-beat-4' : 'h-2 opacity-30'
-          }`}
+          className={`w-0.5 rounded-full bg-[#FF0000] ${isPlaying ? 'h-full mm-beat-4' : 'h-2 opacity-30'
+            }`}
         />
       </div>
     );
