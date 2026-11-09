@@ -678,18 +678,26 @@ export async function searchMusicCatalog(
     };
   }
 
-  // Parallel fetch: Nazriya custom API + JioSaavn direct + global iTunes fallback
-  const [nazriyaTracks, fastDirectTracks, itunesTracks] = await Promise.all([
-    fetchNazriyaSearch(sanitized, 8000),
+  // 1. Primary: Nazriya custom API (your main song provider)
+  const nazriyaTracks = await fetchNazriyaSearch(sanitized, 8000);
+
+  if (nazriyaTracks.length > 0) {
+    searchResultsCache.set(qLower, { tracks: nazriyaTracks, cachedAt: Date.now() });
+    return {
+      requestId,
+      query: sanitized,
+      tracks: nazriyaTracks,
+      upstreamReachable: true,
+    };
+  }
+
+  // 2. Fallback only if Nazriya returns 0 results: JioSaavn & iTunes
+  const [fastDirectTracks, itunesTracks] = await Promise.all([
     searchFastDirectCatalog(sanitized),
     searchItunesCatalog(sanitized),
   ]);
 
   const mergedMap = new Map<string, Track>();
-  // Prioritize Nazriya and direct CDN stream tracks
-  for (const item of nazriyaTracks) {
-    mergedMap.set(item.providerId, item);
-  }
   for (const item of fastDirectTracks) {
     if (!mergedMap.has(item.providerId)) {
       mergedMap.set(item.providerId, item);
