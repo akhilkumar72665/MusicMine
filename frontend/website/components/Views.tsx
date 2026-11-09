@@ -503,8 +503,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       onClick={() => setHeroSlideIndex(i)}
                       aria-label={`Featured track ${i + 1}: ${s.cleanTitle}`}
                       className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${i === safeHeroIndex
-                          ? 'w-7 bg-[#FF0000]'
-                          : 'w-2 bg-neutral-700 hover:bg-neutral-500'
+                        ? 'w-7 bg-[#FF0000]'
+                        : 'w-2 bg-neutral-700 hover:bg-neutral-500'
                         }`}
                     />
                   ))}
@@ -773,8 +773,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <div
                       key={track.id}
                       className={`group relative rounded-xl p-3 border transition-colors flex items-center gap-3.5 ${isCurrent
-                          ? 'bg-neutral-900 border-[#FF0000]'
-                          : 'bg-[#0E0E0E] hover:bg-[#161616] border-neutral-850 hover:border-neutral-700'
+                        ? 'bg-neutral-900 border-[#FF0000]'
+                        : 'bg-[#0E0E0E] hover:bg-[#161616] border-neutral-850 hover:border-neutral-700'
                         }`}
                     >
                       <button
@@ -1511,8 +1511,8 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   type="button"
                   onClick={() => setTrendFilter(chip.id)}
                   className={`px-3 py-1 rounded-full text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${trendFilter === chip.id
-                      ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
-                      : 'bg-[#121212] text-neutral-400 hover:text-white border border-neutral-800'
+                    ? 'bg-[#FF0000] text-white shadow-[0_0_10px_rgba(255,0,0,0.5)]'
+                    : 'bg-[#121212] text-neutral-400 hover:text-white border border-neutral-800'
                     }`}
                 >
                   {chip.label}

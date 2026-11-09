@@ -35,7 +35,7 @@ export default function handler(req: any, res: any) {
         }
       }
     }
-  } catch {}
+  } catch { }
 
   return app(req, res);
 }

@@ -7,6 +7,10 @@ import {
   INITIAL_TRACKS,
 } from '../frontend/website/data/catalogFixtures';
 import {
+  fetchLiveTrendingCatalog,
+  fetchNazriyaArtist,
+  fetchNazriyaSuggestions,
+  fetchNazriyaTrending,
   resolveFastDirectStreamUrl,
   resolveRealAudioBuffer,
   searchMusicCatalog,
@@ -73,7 +77,7 @@ export function createExpressApp() {
           }
         }
       }
-    } catch {}
+    } catch { }
 
     const reqId = crypto.randomUUID();
     res.setHeader('X-Request-Id', reqId);
@@ -91,43 +95,51 @@ export function createExpressApp() {
   app.get(
     ['/api/v1/search', '/v1/search', '/api/search', '/search', '/api'],
     async (req: Request, res: Response) => {
-    const clientIp =
-      (req.headers['x-forwarded-for'] as string) ||
-      req.socket?.remoteAddress ||
-      'local';
-    if (!checkRateLimit(clientIp)) {
-      res.status(429).json({
-        error: {
-          code: 'RATE_LIMITED',
-          message: 'Too many search requests. Please wait a moment and try again.',
+      const clientIp =
+        (req.headers['x-forwarded-for'] as string) ||
+        req.socket?.remoteAddress ||
+        'local';
+      if (!checkRateLimit(clientIp)) {
+        res.status(429).json({
+          error: {
+            code: 'RATE_LIMITED',
+            message: 'Too many search requests. Please wait a moment and try again.',
+          },
+        });
+        return;
+      }
+
+      const q = typeof req.query.q === 'string' ? req.query.q : '';
+      const result = await searchMusicCatalog(q, serverTracks);
+
+      // Merge discovered tracks into local cache
+      for (const remoteTrack of result.tracks) {
+        if (!serverTracks.some((t) => t.id === remoteTrack.id)) {
+          serverTracks.push(remoteTrack);
+        }
+      }
+
+      res.json({
+        data: result.tracks,
+        meta: {
+          requestId: result.requestId,
+          query: result.query,
+          count: result.tracks.length,
+          upstreamConnected: result.upstreamReachable,
         },
       });
-      return;
-    }
-
-    const q = typeof req.query.q === 'string' ? req.query.q : '';
-    const result = await searchMusicCatalog(q, serverTracks);
-
-    // Merge discovered tracks into local cache
-    for (const remoteTrack of result.tracks) {
-      if (!serverTracks.some((t) => t.id === remoteTrack.id)) {
-        serverTracks.push(remoteTrack);
-      }
-    }
-
-    res.json({
-      data: result.tracks,
-      meta: {
-        requestId: result.requestId,
-        query: result.query,
-        count: result.tracks.length,
-        upstreamConnected: result.upstreamReachable,
-      },
     });
-  });
 
-  // 2. GET /api/v1/audio/stream (Same-origin zero-latency chunked proxy for Web Audio EQ & Analyser)
-  app.get(['/api/v1/audio/stream', '/v1/audio/stream'], async (req: Request, res: Response) => {
+  // 2. GET /api/v1/audio/stream, /api/audio, /api/flac (Zero-latency direct stream or proxy)
+  app.get(
+    [
+      '/api/v1/audio/stream',
+      '/v1/audio/stream',
+      '/api/audio',
+      '/api/flac',
+      '/api/audio/stream',
+    ],
+    async (req: Request, res: Response) => {
     const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
     const query = typeof req.query.q === 'string' ? req.query.q : undefined;
     const title = typeof req.query.title === 'string' ? req.query.title : undefined;
@@ -220,7 +232,9 @@ export function createExpressApp() {
   });
 
   // 3. GET /api/v1/audio/download (Direct file attachment stream for zero-buffer download)
-  app.get(['/api/v1/audio/download', '/v1/audio/download'], async (req: Request, res: Response) => {
+  app.get(
+    ['/api/v1/audio/download', '/v1/audio/download', '/api/download'],
+    async (req: Request, res: Response) => {
     const providerId = typeof req.query.id === 'string' ? req.query.id : undefined;
     const query = typeof req.query.q === 'string' ? req.query.q : undefined;
     const title = typeof req.query.title === 'string' ? req.query.title : 'track';
@@ -276,6 +290,50 @@ export function createExpressApp() {
       meta: { count: serverTracks.length },
     });
   });
+
+  // GET /api/suggest, /api/v1/suggest
+  app.get(
+    ['/api/v1/suggest', '/v1/suggest', '/api/suggest', '/suggest'],
+    async (req: Request, res: Response) => {
+      const q = typeof req.query.q === 'string' ? req.query.q : '';
+      const hl = typeof req.query.hl === 'string' ? req.query.hl : 'en';
+      const suggestions = await fetchNazriyaSuggestions(q, hl);
+      res.json({
+        success: true,
+        data: suggestions,
+      });
+    }
+  );
+
+  // GET /api/trending, /api/v1/trending
+  app.get(
+    ['/api/v1/trending', '/v1/trending', '/api/trending', '/trending'],
+    async (req: Request, res: Response) => {
+      const n = parseInt(typeof req.query.n === 'string' ? req.query.n : '20', 10) || 20;
+      const trending = await fetchNazriyaTrending(n);
+      const tracks = trending.length > 0 ? trending : await fetchLiveTrendingCatalog();
+      res.json({
+        success: true,
+        data: tracks,
+      });
+    }
+  );
+
+  // GET /api/artist, /api/v1/artist
+  app.get(
+    ['/api/v1/artist', '/v1/artist', '/api/artist', '/artist'],
+    async (req: Request, res: Response) => {
+      const name = typeof req.query.name === 'string' ? req.query.name : '';
+      const artistData = await fetchNazriyaArtist(name);
+      if (!artistData) {
+        res.status(404).json({
+          error: { code: 'ARTIST_NOT_FOUND', message: 'Artist info unavailable.' },
+        });
+        return;
+      }
+      res.json(artistData);
+    }
+  );
 
   // 5. GET /api/v1/track/:trackId
   app.get(['/api/v1/track/:trackId', '/v1/track/:trackId'], (req: Request, res: Response) => {

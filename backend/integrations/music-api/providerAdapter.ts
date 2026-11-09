@@ -3,7 +3,7 @@ import { Track, UpstreamSearchContract } from '../../../shared/types/music';
 import { INITIAL_TRACKS } from '../../../frontend/website/data/catalogFixtures';
 
 const UPSTREAM_BASE_URL =
-  process.env.MUSIC_API_BASE_URL || 'https://nazriya.teamgod.online';
+  process.env.MUSIC_API_BASE_URL || 'https://nazriya.musicmine.in';
 
 let cachedApiKey: string =
   process.env.MUSIC_API_KEY || '';
@@ -245,6 +245,17 @@ export async function fetchLiveTrendingCatalog(): Promise<Track[]> {
     return cachedTrendingTracks;
   }
 
+  // 1. Try Nazriya official /api/trending
+  try {
+    const nazriyaTrending = await fetchNazriyaTrending(30);
+    if (nazriyaTrending.length > 0) {
+      cachedTrendingTracks = nazriyaTrending;
+      cachedTrendingAt = now;
+      return cachedTrendingTracks;
+    }
+  } catch {}
+
+  // 2. Fallback to direct JioSaavn Top Chart
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4500);
@@ -413,7 +424,7 @@ export function normalizeUpstreamItem(raw: UpstreamSearchContract): Track {
   };
 }
 
-async function fetchNazriyaSearch(query: string, timeoutMs = 1500): Promise<Track[]> {
+export async function fetchNazriyaSearch(query: string, timeoutMs = 2500): Promise<Track[]> {
   try {
     if (!cachedApiKey) {
       await provisionFreshNazriyaKey();
@@ -422,33 +433,36 @@ async function fetchNazriyaSearch(query: string, timeoutMs = 1500): Promise<Trac
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const url = new URL('/api/search', UPSTREAM_BASE_URL);
     url.searchParams.set('q', query);
-    url.searchParams.set('key', cachedApiKey);
+    if (cachedApiKey) {
+      url.searchParams.set('key', cachedApiKey);
+    }
 
     const response = await fetch(url.toString(), {
       method: 'GET',
       signal: controller.signal,
       headers: {
         Accept: 'application/json',
-        'x-api-key': cachedApiKey,
+        ...(cachedApiKey ? { 'x-api-key': cachedApiKey } : {}),
       },
     });
     clearTimeout(timeout);
 
     if (response.status === 401 || response.status === 403 || response.status === 429) {
-      provisionFreshNazriyaKey().catch(() => { });
       return [];
     }
 
     if (!response.ok) return [];
 
     const payload = await response.json();
-    let rawList: UpstreamSearchContract[] = [];
+    let rawList: any[] = [];
     if (Array.isArray(payload)) {
       rawList = payload;
+    } else if (payload && typeof payload === 'object' && Array.isArray(payload.data)) {
+      rawList = payload.data;
     } else if (payload && typeof payload === 'object' && Array.isArray(payload.results)) {
       rawList = payload.results;
     } else if (payload && typeof payload === 'object' && 'id' in payload) {
-      rawList = [payload as UpstreamSearchContract];
+      rawList = [payload];
     }
 
     const wantsLongMix = /jukebox|nonstop|mashup|hour|playlist/i.test(query);
@@ -457,6 +471,106 @@ async function fetchNazriyaSearch(query: string, timeoutMs = 1500): Promise<Trac
       .filter((t) => wantsLongMix || t.duration <= 900);
   } catch {
     return [];
+  }
+}
+
+export async function fetchNazriyaTrending(n = 20): Promise<Track[]> {
+  try {
+    if (!cachedApiKey) {
+      await provisionFreshNazriyaKey();
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const url = new URL('/api/trending', UPSTREAM_BASE_URL);
+    url.searchParams.set('n', String(n));
+    if (cachedApiKey) {
+      url.searchParams.set('key', cachedApiKey);
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        ...(cachedApiKey ? { 'x-api-key': cachedApiKey } : {}),
+      },
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return [];
+
+    const payload = await response.json();
+    let rawList: any[] = [];
+    if (Array.isArray(payload)) {
+      rawList = payload;
+    } else if (payload && typeof payload === 'object' && Array.isArray(payload.data)) {
+      rawList = payload.data;
+    } else if (payload && typeof payload === 'object' && Array.isArray(payload.results)) {
+      rawList = payload.results;
+    }
+    return rawList.map(normalizeUpstreamItem);
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchNazriyaSuggestions(q: string, hl = 'en'): Promise<string[]> {
+  try {
+    if (!cachedApiKey) {
+      await provisionFreshNazriyaKey();
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2000);
+    const url = new URL('/api/suggest', UPSTREAM_BASE_URL);
+    url.searchParams.set('q', q);
+    url.searchParams.set('hl', hl);
+    if (cachedApiKey) {
+      url.searchParams.set('key', cachedApiKey);
+    }
+
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        ...(cachedApiKey ? { 'x-api-key': cachedApiKey } : {}),
+      },
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return [];
+    const payload = await response.json();
+    if (Array.isArray(payload)) return payload.map(String);
+    if (payload && Array.isArray(payload.suggestions)) return payload.suggestions.map(String);
+    if (payload && Array.isArray(payload.data)) return payload.data.map(String);
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchNazriyaArtist(name: string): Promise<any> {
+  try {
+    if (!cachedApiKey) {
+      await provisionFreshNazriyaKey();
+    }
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const url = new URL('/api/artist', UPSTREAM_BASE_URL);
+    url.searchParams.set('name', name);
+    if (cachedApiKey) {
+      url.searchParams.set('key', cachedApiKey);
+    }
+
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+      headers: {
+        Accept: 'application/json',
+        ...(cachedApiKey ? { 'x-api-key': cachedApiKey } : {}),
+      },
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
   }
 }
 
@@ -557,16 +671,22 @@ export async function searchMusicCatalog(
     };
   }
 
-  // Parallel fetch: High-speed JioSaavn search + global iTunes fallback
-  const [fastDirectTracks, itunesTracks] = await Promise.all([
+  // Parallel fetch: Nazriya custom API + JioSaavn direct + global iTunes fallback
+  const [nazriyaTracks, fastDirectTracks, itunesTracks] = await Promise.all([
+    fetchNazriyaSearch(sanitized, 2500),
     searchFastDirectCatalog(sanitized),
     searchItunesCatalog(sanitized),
   ]);
 
   const mergedMap = new Map<string, Track>();
-  // Prioritize tracks that already have instant direct CDN streamUrls
-  for (const item of fastDirectTracks) {
+  // Prioritize Nazriya and direct CDN stream tracks
+  for (const item of nazriyaTracks) {
     mergedMap.set(item.providerId, item);
+  }
+  for (const item of fastDirectTracks) {
+    if (!mergedMap.has(item.providerId)) {
+      mergedMap.set(item.providerId, item);
+    }
   }
   for (const item of localMatches) {
     if (!mergedMap.has(item.providerId)) {
@@ -588,7 +708,7 @@ export async function searchMusicCatalog(
     requestId,
     query: sanitized,
     tracks: finalTracks,
-    upstreamReachable: fastDirectTracks.length > 0 || itunesTracks.length > 0,
+    upstreamReachable: nazriyaTracks.length > 0 || fastDirectTracks.length > 0 || itunesTracks.length > 0,
   };
 }
 
