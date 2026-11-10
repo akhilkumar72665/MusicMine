@@ -114,7 +114,7 @@ async function resolveSaavnEncryptedUrl(encryptedMediaUrl: string): Promise<stri
 
     const data = (await res.json()) as { auth_url?: string };
     if (data.auth_url) {
-      const match = data.auth_url.match(/saavncdn\.com(\/[^?]+)_96\.mp4/);
+      const match = data.auth_url.match(/saavncdn\.com(\/[^?]+)_(?:48|96|160|320)\.mp4/);
       const cdnUrl = match
         ? `https://aac.saavncdn.com${match[1]}_160.mp4`
         : data.auth_url;

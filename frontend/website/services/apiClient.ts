@@ -33,9 +33,8 @@ function parseRawListToTracks(rawList: any[]): Track[] {
       (providerId.length === 11 ? `https://i.ytimg.com/vi/${providerId}/hqdefault.jpg` : undefined);
 
     let streamUrl = item.streamUrl;
-    if (!streamUrl || !/^https?:\/\//i.test(streamUrl) || streamUrl.includes('/api/v1/audio/stream') || streamUrl.includes('/api/audio/stream')) {
-      const q = encodeURIComponent(cleanTitle || rawTitle);
-      streamUrl = `${UPSTREAM_API_BASE}/api/audio?q=${q}&key=${UPSTREAM_API_KEY}`;
+    if (streamUrl && (streamUrl.includes('/api/v1/audio/stream') || streamUrl.includes('/api/audio/stream'))) {
+      streamUrl = undefined;
     }
 
     if (item.cleanTitle && item.artistName && item.id) {

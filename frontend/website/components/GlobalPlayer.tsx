@@ -1822,6 +1822,11 @@ export const GlobalPlayer: React.FC<GlobalPlayerProps> = ({
                 <span className="text-[9px] font-mono text-[#ff7272] bg-[#FF0000]/10 px-1.5 py-0.2 rounded border border-[#FF0000]/25 shrink-0 hidden sm:inline-block">
                   {currentTrack.sourceApi || (currentTrack.providerId?.startsWith('svn-') ? 'JioSaavn' : currentTrack.providerId?.startsWith('itu-') ? 'iTunes' : 'Nazriya API')}
                 </span>
+                {engineState.statusMessage && (
+                  <span className="text-[10px] text-amber-400 font-medium animate-pulse truncate">
+                    · {engineState.statusMessage}
+                  </span>
+                )}
               </div>
             </div>
 

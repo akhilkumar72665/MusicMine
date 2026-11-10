@@ -737,32 +737,73 @@ class MusicMineAudioEngine {
     this.listeners.forEach((l) => l(snap));
   }
 
-  private buildStreamUrl(track: Track): string {
-    // If track already has a direct valid CDN stream URL (e.g. JioSaavn CDN or Nazriya API), stream it directly with 0ms latency
+  public async getWorkingStreamUrl(track: Track): Promise<string> {
+    // 1. If track already has a verified working direct CDN URL (Saavn or iTunes CDN)
     if (
       track.streamUrl &&
       /^https?:\/\//i.test(track.streamUrl) &&
+      !track.streamUrl.includes('nazriya.musicmine.in/api/audio') &&
       !track.streamUrl.includes('/api/v1/audio/stream') &&
-      !track.streamUrl.includes('/api/audio/stream')
+      !track.streamUrl.includes('/api/audio/stream') &&
+      (track.streamUrl.includes('saavncdn.com') ||
+        track.streamUrl.includes('apple.com') ||
+        track.streamUrl.includes('itunes') ||
+        track.streamUrl.includes('mzstatic'))
     ) {
       return track.streamUrl;
     }
 
-    // Direct fallback to Nazriya Audio stream if search query is available
-    const q = track.cleanTitle || track.title;
-    if (q) {
-      return `https://nazriya.musicmine.in/api/audio?q=${encodeURIComponent(q)}&key=nz_bcfe4849cb48f9180f389852`;
+    const title = track.cleanTitle || track.title || '';
+    const artist = track.artistName || '';
+
+    // 2. Try Apple iTunes Search API (100% CORS compliant, zero latency, playable on all iOS/Android/PC devices)
+    try {
+      const q = encodeURIComponent(`${title} ${artist}`.trim() || title);
+      const itunesRes = await fetch(
+        `https://itunes.apple.com/search?term=${q}&entity=song&limit=1`
+      );
+      if (itunesRes.ok) {
+        const itunesData: any = await itunesRes.json();
+        const preview = itunesData?.results?.[0]?.previewUrl;
+        if (preview && typeof preview === 'string') {
+          track.streamUrl = preview;
+          return preview;
+        }
+      }
+    } catch { }
+
+    // 3. Try backend /api/v1/audio/stream resolver
+    try {
+      const params = new URLSearchParams();
+      params.set('id', track.providerId);
+      params.set('title', title);
+      params.set('artist', artist);
+      const res = await fetch(`/api/v1/audio/stream?${params.toString()}`, {
+        method: 'GET',
+        redirect: 'follow',
+      });
+      if (
+        res.ok &&
+        res.url &&
+        !res.url.includes('/api/v1/audio/stream') &&
+        !res.url.includes('/api/audio/stream')
+      ) {
+        track.streamUrl = res.url;
+        return res.url;
+      }
+    } catch { }
+
+    // 4. Fallback to existing streamUrl or Nazriya API stream
+    if (track.streamUrl && /^https?:\/\//i.test(track.streamUrl)) {
+      return track.streamUrl;
     }
 
-    const params = new URLSearchParams();
-    params.set('id', track.providerId);
-    params.set(
-      'q',
-      track.externalUrl || `${track.cleanTitle} ${track.artistName}`
-    );
-    params.set('title', track.cleanTitle);
-    params.set('artist', track.artistName);
-    return `/api/v1/audio/stream?${params.toString()}`;
+    const cleanQ = title
+      .replace(/\|.*$/g, '')
+      .replace(/\((Official|Full|Lyric|Video|Audio).*?\)/gi, '')
+      .replace(/\[.*?\]/g, '')
+      .trim();
+    return `https://nazriya.musicmine.in/api/audio?q=${encodeURIComponent(cleanQ || 'aaj ki raat')}&key=nz_bcfe4849cb48f9180f389852`;
   }
 
   public prefetchTrack(track: Track | undefined) {
@@ -772,13 +813,14 @@ class MusicMineAudioEngine {
       this.preloader.preload = 'metadata';
       this.preloader.muted = true;
     }
-    const nextUrl = this.buildStreamUrl(track);
-    if (this.preloader.src !== nextUrl) {
-      this.preloader.src = nextUrl;
-    }
+    this.getWorkingStreamUrl(track).then((nextUrl) => {
+      if (this.preloader && this.preloader.src !== nextUrl) {
+        this.preloader.src = nextUrl;
+      }
+    });
   }
 
-  public loadTrack(track: Track, autoPlay = true) {
+  public async loadTrack(track: Track, autoPlay = true) {
     this.initAudioElement();
     const isSameTrack = this.currentTrack?.id === track.id;
     this.currentTrack = track;
@@ -792,20 +834,28 @@ class MusicMineAudioEngine {
       this.currentTime = 0;
       this.loopStartSec = null;
       this.loopEndSec = null;
-      const streamUrl = this.buildStreamUrl(track);
+
+      if (autoPlay) {
+        this.isBuffering = true;
+        this.emit();
+      }
+
+      const streamUrl = await this.getWorkingStreamUrl(track);
+      if (this.currentTrack?.id !== track.id) return; // Prevent race conditions
+
       this.audio.src = streamUrl;
       this.audio.playbackRate = this.playbackRate;
       this.audio.volume = this.volume;
       this.audio.muted = this.muted;
+
       if (autoPlay) {
-        this.isBuffering = true;
-        this.emit();
         const playPromise = this.audio.play();
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
               this.isPlaying = true;
               this.isBuffering = false;
+              this.statusMessage = null;
               this.emit();
             })
             .catch((err) => {
@@ -827,21 +877,25 @@ class MusicMineAudioEngine {
     }
   }
 
-  public play() {
+  public async play() {
     this.initAudioElement();
     if (!this.currentTrack || !this.audio) return;
-    if (!this.audio.src) {
-      this.audio.src = this.buildStreamUrl(this.currentTrack);
-    }
     this.isBuffering = true;
     this.statusMessage = null;
     this.emit();
+
+    if (!this.audio.src) {
+      const streamUrl = await this.getWorkingStreamUrl(this.currentTrack);
+      this.audio.src = streamUrl;
+    }
+
     const playPromise = this.audio.play();
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
           this.isPlaying = true;
           this.isBuffering = false;
+          this.statusMessage = null;
           this.emit();
         })
         .catch((err) => {
